@@ -1,0 +1,16 @@
+name = "api"
+main = "src/index.ts"
+compatibility_date = "2025-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# -- Secrets (set with `wrangler secret put <NAME>`):
+#    CLERK_SECRET_KEY     Server-side Clerk key for verifying session JWTs.
+#    DATABASE_URL         Neon connection string (the *pooled* one for HTTP driver).
+#
+# Local dev: copy `.dev.vars.example` to `.dev.vars` and fill them in.
+# These are loaded by `wrangler dev` automatically.
+
+[vars]
+# Optional public/non-secret config can go here. Empty by default.
+
+# Bindings (e.g. KV, R2) would go below if/when we add them.

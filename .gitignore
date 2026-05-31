@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+ios/Pods/
+ios/build/
+android/build/
+android/app/build/
+android/.gradle/
+*.iml
+*.keystore
+!debug.keystore
+
+# Testing
+coverage/
+*.lcov
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

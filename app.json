@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "SN Cert Prep (Unofficial)",
+    "slug": "sn-cert-prep",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "sncertprep",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F172A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.sncertprep.unofficial",
+      "infoPlist": {
+        "NSUserNotificationUsageDescription": "Send you study reminders and streak alerts."
+      }
+    },
+    "android": {
+      "package": "app.sncertprep.unofficial",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F172A"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0F172A"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "DISCLAIMER": "Unofficial. Not affiliated with or endorsed by ServiceNow, Inc.",
+      "CLERK_PUBLISHABLE_KEY": "",
+      "API_BASE_URL": ""
+    }
+  }
+}
