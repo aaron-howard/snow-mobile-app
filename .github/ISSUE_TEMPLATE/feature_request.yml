@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest an improvement or new capability (not for security reports).
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security:** Vulnerability reports belong in the **Security** tab or [SECURITY.md](https://github.com/OWNER/REPO/blob/main/SECURITY.md) (replace `OWNER/REPO`), not here.
+
+        This project is **unofficial** and not affiliated with ServiceNow, Inc. Requests should not imply official certification training.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What user or maintainer pain does this address? Who benefits?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should happen instead? UI sketch, API shape, or flow welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      description: Other ways you thought about solving the same problem.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context (optional)
+      description: Links to requirements/design sections, mockups, or related issues.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked [requirements.md](https://github.com/OWNER/REPO/blob/main/requirements.md) / [design.md](https://github.com/OWNER/REPO/blob/main/design.md) for alignment where relevant (replace `OWNER/REPO`)
+          required: false
+        - label: I have searched existing issues and discussions for duplicates
+          required: true

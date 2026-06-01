@@ -17,7 +17,7 @@ Use **one** of these channels:
    GitHub will route the report privately to maintainers.
 
 2. **Email**  
-   Send details to **`security@dallascityhall.com`** — **this is a placeholder.** Replace it in `SECURITY.md` with your organization’s approved security contact (for example City IT / InfoSec routing) before publishing or sharing the repo widely.
+   If your organization provides a dedicated security inbox, publish that address here and in repository settings. Until then, prefer **GitHub private reporting** (above) so reports are not lost.
 
 Include, where possible:
 
@@ -45,7 +45,7 @@ Include, where possible:
 
 ## What to expect
 
-Maintainers will acknowledge receipt when possible. **Replace this paragraph** with your organization’s SLA (e.g. “initial response within 5 business days”) once policy is set.
+Maintainers will acknowledge receipt when possible. Add your organization’s expected **initial response time** here once policy is set (see internal security review checklist).
 
 ## Safe harbor
 

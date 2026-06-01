@@ -44,12 +44,17 @@ If you change worker TypeScript, also run `pnpm tsc --noEmit` from the [`workers
 - Reference related issues or tasks when applicable.
 - For UI changes, include brief **screenshots** or screen recordings when helpful.
 - Do not commit secrets (`.env`, keys, tokens). If you need to document a variable, use `.env.example`.
+- When opening a **bug** or **feature** issue, use the repository templates under [.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/) (GitHub shows them in the “New issue” flow).
 
 Use the [pull request template](.github/pull_request_template.md) checklist when you open a PR.
 
 ## Security
 
 If you believe you have found a **security vulnerability**, follow **[SECURITY.md](SECURITY.md)**. Do not file a public issue for undisclosed vulnerabilities.
+
+## Issue templates (maintainers)
+
+The GitHub form templates under [.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/) use the placeholder `OWNER/REPO` in a few URLs. After the repository is public (or before first heavy use), **replace every `OWNER/REPO`** in `bug_report.yml` and `feature_request.yml` with your real GitHub `organization/repository` slug so in-form links resolve.
 
 ## License
 
