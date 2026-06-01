@@ -69,6 +69,21 @@ function RootStack() {
     void import('@/db/seedDevCatalog').then((m) => m.seedDevCatalogIfEmpty());
   }, [isSignedIn]);
 
+  // Notification handler + tap routing (Req 8.5, 8.6). Loaded lazily so the
+  // native module is never imported under jest.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'test') return;
+    let subscription: { remove: () => void } | undefined;
+    void import('@/notifications/notificationService').then((m) => {
+      m.configureNotificationHandler();
+      subscription = m.addNotificationResponseRouter((path) =>
+        router.push(path as Parameters<typeof router.push>[0]),
+      );
+      if (isSignedIn) void m.ensureNotificationPermissions();
+    });
+    return () => subscription?.remove();
+  }, [isSignedIn, router]);
+
   useEffect(() => {
     if (!isLoaded) return;
     const firstSegment = segments[0];

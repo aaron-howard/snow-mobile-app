@@ -1,5 +1,15 @@
 import { useProfile } from '@/domain/analytics/useProfile';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useNotificationSettings } from '@/domain/notifications/useNotificationSettings';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 interface StatProps {
   label: string;
@@ -16,6 +26,126 @@ function StatCard({ label, value, unit }: StatProps) {
     >
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+interface ToggleRowProps {
+  label: string;
+  value: boolean;
+  onValueChange: (next: boolean) => void;
+}
+
+function ToggleRow({ label, value, onValueChange }: ToggleRowProps) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        accessibilityRole="switch"
+        accessibilityLabel={label}
+        accessibilityState={{ checked: value }}
+      />
+    </View>
+  );
+}
+
+interface TimeFieldProps {
+  label: string;
+  value: string;
+  onCommit: (next: string) => void;
+}
+
+function TimeField({ label, value, onCommit }: TimeFieldProps) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <TextInput
+        defaultValue={value}
+        onEndEditing={(e) => onCommit(e.nativeEvent.text)}
+        placeholder="HH:MM"
+        placeholderTextColor="#64748B"
+        keyboardType="numbers-and-punctuation"
+        style={styles.timeInput}
+        accessibilityLabel={`${label}, 24-hour HH:MM`}
+      />
+    </View>
+  );
+}
+
+function NotificationSettingsSection() {
+  const { loading, error, settings, permission, update, requestPermission } =
+    useNotificationSettings();
+
+  if (loading) {
+    return <ActivityIndicator color="#60A5FA" accessibilityLabel="Loading notification settings" />;
+  }
+  if (error) {
+    return (
+      <Text style={styles.errorBanner} accessibilityRole="alert">
+        {error}
+      </Text>
+    );
+  }
+  if (!settings) return null;
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionHeading} accessibilityRole="header">
+        Notifications
+      </Text>
+
+      {permission === 'denied' ? (
+        <Pressable
+          style={styles.permissionPrompt}
+          onPress={() => void requestPermission()}
+          accessibilityRole="button"
+          accessibilityLabel="Notifications are blocked. Tap to enable them in Settings."
+        >
+          <Text style={styles.permissionPromptText}>
+            Notifications are blocked. Enable them to receive study reminders.
+          </Text>
+        </Pressable>
+      ) : null}
+
+      <ToggleRow
+        label="Daily reminder"
+        value={settings.dailyReminderEnabled}
+        onValueChange={(v) => void update({ dailyReminderEnabled: v })}
+      />
+      {settings.dailyReminderEnabled ? (
+        <TimeField
+          label="Reminder time"
+          value={settings.dailyReminderTime}
+          onCommit={(t) => void update({ dailyReminderTime: t })}
+        />
+      ) : null}
+      <ToggleRow
+        label="Streak-risk alerts"
+        value={settings.streakRiskEnabled}
+        onValueChange={(v) => void update({ streakRiskEnabled: v })}
+      />
+      <ToggleRow
+        label="Milestone congratulations"
+        value={settings.congratulatoryEnabled}
+        onValueChange={(v) => void update({ congratulatoryEnabled: v })}
+      />
+      <ToggleRow
+        label="Exam-ready (80%) alert"
+        value={settings.readiness80Enabled}
+        onValueChange={(v) => void update({ readiness80Enabled: v })}
+      />
+      <TimeField
+        label="Quiet hours start"
+        value={settings.quietHoursStart ?? ''}
+        onCommit={(t) => void update({ quietHoursStart: t.trim() === '' ? null : t })}
+      />
+      <TimeField
+        label="Quiet hours end"
+        value={settings.quietHoursEnd ?? ''}
+        onCommit={(t) => void update({ quietHoursEnd: t.trim() === '' ? null : t })}
+      />
     </View>
   );
 }
@@ -54,6 +184,8 @@ export default function ProfileScreen() {
           <StatCard label="Study sessions" value={totalStudySessions} />
         </View>
       ) : null}
+
+      <NotificationSettingsSection />
     </ScrollView>
   );
 }
@@ -100,5 +232,48 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     color: '#FEE2E2',
     padding: 12,
+  },
+  section: {
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    gap: 4,
+    marginTop: 8,
+    padding: 16,
+  },
+  sectionHeading: {
+    color: '#F8FAFC',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  rowLabel: {
+    color: '#E2E8F0',
+    flexShrink: 1,
+    fontSize: 15,
+  },
+  timeInput: {
+    backgroundColor: '#0F172A',
+    borderRadius: 8,
+    color: '#F8FAFC',
+    minWidth: 90,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    textAlign: 'center',
+  },
+  permissionPrompt: {
+    backgroundColor: '#78350F',
+    borderRadius: 8,
+    marginBottom: 8,
+    padding: 12,
+  },
+  permissionPromptText: {
+    color: '#FEF3C7',
+    fontSize: 14,
   },
 });

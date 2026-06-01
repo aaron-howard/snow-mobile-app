@@ -295,39 +295,43 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 7.1–7.6_
 
 
-- [~] 11. Checkpoint — Study features complete
+[x] 11. Checkpoint — Study features complete
   - Ensure all tests pass, ask the user if questions arise.
+  - **All gates green:** `pnpm test` 221/221 (48 suites), `pnpm typecheck` clean, `pnpm lint` clean. (The single `act()` console line in `login.test.tsx` is a pre-existing cosmetic warning, not a failure.)
+  - **Flagged-decisions review delivered to the user** to decide whether a follow-up task (proposed "Task 16") is warranted to close the noted deviations/limitations.
 
-- [ ] 12. Notifications and study reminders
-  - [~] 12.1 Implement `NotificationScheduler` pure logic functions: `computeReminderFireTime`, `rescheduleForQuietHours`, `shouldSendStreakRisk`, `shouldSendCongratulatory`, `shouldSendReadiness80`
-    - Quiet hours window must be ≤ 12 consecutive hours; reschedule to first minute after quiet hours end (Requirement 8.4)
-    - Congratulatory: fire on ≥10-point increase since last notification or enrollment; max once per 24 hours per exam (Requirement 8.3)
-    - Readiness-80: fire exactly at qualifying score transitions (first reach of 80, or re-reach after dropping below 80) (Requirement 6.6)
+- [x] 12. Notifications and study reminders
+  - [x] 12.1 Implement `NotificationScheduler` pure logic functions: `computeReminderFireTime`, `rescheduleForQuietHours`, `shouldSendStreakRisk`, `shouldSendCongratulatory`, `shouldSendReadiness80`
+    - All five live in [src/domain/notifications/NotificationScheduler.ts](src/domain/notifications/NotificationScheduler.ts) as a frozen object of pure functions. `shouldSendReadiness80` is re-exported from the analytics domain ([src/domain/analytics/readinessNotifications.ts](src/domain/analytics/readinessNotifications.ts)) so there is a single source of truth (it was first implemented in task 9).
+    - `computeReminderFireTime(HH:MM, today)` returns the next occurrence at/after `today`, rolling to tomorrow when the time has passed. `rescheduleForQuietHours` handles both same-day and midnight-wrapping windows and moves an in-window time to the first minute after the window ends.
+    - `shouldSendStreakRisk` design decision: fires only when it is at/after the cutoff hour (default 8 PM, Req 8.2), no session happened today, **and** the user studied yesterday — i.e. there is an active streak worth saving. A streak-risk alert with no streak to lose would be noise.
+    - `shouldSendCongratulatory` baseline = score at the last congratulatory notification (or the earliest/enrollment score if none); fires on a ≥10-point gain with a 24-hour cooldown. Epoch-ms timestamps to match the analytics layer.
     - _Requirements: 8.1–8.4, 6.6_
-  - [~] 12.2 Write property test for quiet-hours rescheduling
-    - **Property 21: Notification quiet-hours rescheduling never fires during quiet hours**
-    - Use `fc.record` of times within quiet window; verify output ≥ quietEnd and never within quiet window
+  - [x] 12.2 Write property test for quiet-hours rescheduling
+    - **Property 21** — [src/domain/notifications/__tests__/quietHours.property.test.ts](src/domain/notifications/__tests__/quietHours.property.test.ts). Generates windows of 1–720 minutes (≤12h) plus an in-window time and asserts the result lands exactly on quiet-end, is never inside the window, and is never earlier; a second property asserts out-of-window times are returned unchanged. 300 runs each.
     - Tag: `// Feature: servicenow-cert-study-app, Property 21`
     - **Validates: Requirements 8.4**
-  - [~] 12.3 Write property test for congratulatory notification trigger
-    - **Property 22: Congratulatory notification fires exactly on qualifying readiness score increases**
-    - Use `fc.array` of score/timestamp pairs; verify fires exactly on ≥10-point increases, max once per 24h per exam
+  - [x] 12.3 Write property test for congratulatory notification trigger
+    - **Property 22** — [src/domain/notifications/__tests__/congratulatory.property.test.ts](src/domain/notifications/__tests__/congratulatory.property.test.ts). Replays score/timestamp histories live vs. an independent baseline+cooldown tracker, asserts equality of fire indices, and additionally asserts every consecutive pair of fires is ≥24h apart. 300 runs.
     - Tag: `// Feature: servicenow-cert-study-app, Property 22`
     - **Validates: Requirements 8.3**
-  - [~] 12.4 Write property test for readiness-80 notification transitions
-    - **Property 16: Readiness-80 notification fires exactly at qualifying score transitions**
-    - Use `fc.array` of score/timestamp pairs crossing 80 threshold; verify fires exactly at qualifying transitions, not more than once per qualifying crossing
+  - [x] 12.4 Write property test for readiness-80 notification transitions
+    - **Property 16** — already implemented in task 9 at [src/domain/analytics/__tests__/readiness80.property.test.ts](src/domain/analytics/__tests__/readiness80.property.test.ts) (300 runs). The function it validates is the same one re-exported by `NotificationScheduler`, so this subtask reuses it rather than duplicating the test.
     - Tag: `// Feature: servicenow-cert-study-app, Property 16`
     - **Validates: Requirements 6.6**
-  - [~] 12.5 Integrate `expo-notifications` for scheduling, permission handling, and deep-link routing
-    - Request permissions on first launch; detect denied/revoked permissions and show in-app prompt (Requirement 8.5)
-    - Route notification taps to correct screens: daily reminder → home, streak-risk → active study list, congratulatory → progress dashboard (Requirement 8.6)
+  - [x] 12.5 Integrate `expo-notifications` for scheduling, permission handling, and deep-link routing
+    - Side-effecting wrapper in [src/notifications/notificationService.ts](src/notifications/notificationService.ts): `configureNotificationHandler`, `getPermissionState`/`ensureNotificationPermissions` (pure `derivePermissionState` maps the Expo response → `granted`/`denied`/`undetermined`; "blocked + cannot ask again" surfaces as `denied` per Req 8.5), `buildReminderFireDate` (pure: scheduler + quiet-hours), `rescheduleDailyReminder` (DATE trigger), and `addNotificationResponseRouter`.
+    - Deep-link routing is a pure exhaustive map `notificationRoute(type)` in [src/domain/notifications/types.ts](src/domain/notifications/types.ts): daily reminder & streak-risk → `/(tabs)` (home/active study list), congratulatory & readiness-80 → `/(tabs)/progress`. Wired into [app/_layout.tsx](app/_layout.tsx) via a lazy `import()` (guarded out of jest so the native module never loads in tests); permissions are requested on first authenticated launch.
     - _Requirements: 8.1–8.6_
-  - [~] 12.6 Build notification settings UI in profile screen
-    - Configure daily reminder time, enable/disable each notification type individually, set quiet hours (Requirement 8.4)
+  - [x] 12.6 Build notification settings UI in profile screen
+    - `useNotificationSettings` hook ([src/domain/notifications/useNotificationSettings.ts](src/domain/notifications/useNotificationSettings.ts)) loads/persists `NotificationSettingsDTO` via the repo, optimistically updates, reschedules the daily reminder on every change, and reads (without prompting) the OS permission so the UI can show a blocked-state prompt.
+    - Profile screen ([app/(tabs)/profile.tsx](app/(tabs)/profile.tsx)) gains a Notifications section: per-type toggles (daily reminder, streak-risk, congratulatory, exam-ready), reminder-time and quiet-hours `HH:MM` fields, and a tappable in-app prompt when permission is `denied`. All controls carry `accessibilityRole`/`accessibilityLabel`/`accessibilityState`.
     - _Requirements: 8.4_
-  - [~] 12.7 Write unit tests for NotificationScheduler and notification settings UI
-    - Test streak-risk trigger at 8 PM, quiet hours rescheduling, permission-denied in-app prompt, deep-link routing for each notification type
+  - [x] 12.7 Write unit tests for NotificationScheduler and notification settings UI
+    - [src/domain/notifications/__tests__/NotificationScheduler.test.ts](src/domain/notifications/__tests__/NotificationScheduler.test.ts): reminder roll-over, quiet-hours (non-wrap/evening/morning/outside), streak-risk at 8 PM (and the no-streak/already-studied/before-cutoff negatives), congratulatory cooldown, and deep-link routing for all four types.
+    - [src/notifications/__tests__/notificationService.test.ts](src/notifications/__tests__/notificationService.test.ts) (expo-notifications mocked): permission mapping, quiet-hours fire date, prompt-vs-no-prompt paths, schedule/cancel, and a congratulatory tap routed to the progress dashboard.
+    - Profile UI tests in [src/__tests__/screens/profile.test.tsx](src/__tests__/screens/profile.test.tsx): toggle persists via `update`, and the permission-denied prompt invokes `requestPermission`.
+    - **All gates green:** `pnpm test` 254/254 (52 suites), `pnpm typecheck` clean, `pnpm lint` clean. (Pre-existing cosmetic `act()` console line in `login.test.tsx` remains.)
     - _Requirements: 8.1–8.6_
 
 
@@ -415,7 +419,26 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - Sync begins within 60 seconds of stable reconnect
     - _Requirements: 5.8, 7.6, 9.1–9.6_
 
-- [~] 16. Final checkpoint — Ensure all tests pass
+- [ ] 16. Worker-side sync implementation (Neon Postgres) — closes flagged decision A1
+  - **Goal:** Replace the stubbed `POST /sync/pull_changes` and `POST /sync/push_changes` routes with real per-table WatermelonDB sync logic against Neon Postgres, so cross-device bookmark sync (Req 7.6) and offline→online progress sync (Req 9.4–9.6) actually function end-to-end. Today both routes authenticate, return `{ changes: {}, timestamp }` / `{ ok: true }`, and never touch Neon ([workers/src/routes/sync.ts](workers/src/routes/sync.ts)); the per-table SQL was explicitly deferred from task 2.4. This task is a prerequisite for the real sync round-trip integration test in task 15.4.
+  - **Protocol:** Follow the WatermelonDB sync backend contract (https://watermelondb.dev/docs/Sync/Backend). `user_id`-scoped tables are push **and** pull (`user_question_attempts`, `study_sessions`, `simulator_sessions`, `bookmarks`, `notification_settings`, `readiness_score_notifications`, and the `users` row); server-authored content tables (`exams`, `topic_domains`, `blueprint_skills`, `questions`, `answer_choices`, `decks`, `flashcards`, `content_update_notifications`) are **pull-only** and must reject client pushes.
+  - [ ] 16.1 Finalize the Postgres mirror schema in [workers/sql/schema.sql](workers/sql/schema.sql)
+    - Every synced table needs `id TEXT PRIMARY KEY`, an `updated_at BIGINT` (epoch ms) column for delta selection, and a soft-delete tombstone mechanism (`deleted_at BIGINT NULL`, or a `_changes`/tombstone table) so `pull_changes` can report deleted ids. User tables carry an indexed `user_id`. Add `(user_id, updated_at)` indexes for pull performance.
+    - _Requirements: 7.6, 9.4_
+  - [ ] 16.2 Implement `pull_changes`
+    - For each table, return the WatermelonDB `SyncDatabaseChangeSet` shape `{ <table>: { created, updated, deleted } }`. User tables: `SELECT … WHERE user_id = $userId AND updated_at > $lastPulledAt`; split rows into `created` vs `updated` by whether they post-date the client's cursor (or send all as `updated` with `sendCreatedAsUpdated`); `deleted` = tombstoned ids since `lastPulledAt`. Content tables: same delta by `updated_at`, no user filter. Return the server `timestamp` so the client advances its cursor.
+    - _Requirements: 7.6, 9.4–9.6_
+  - [ ] 16.3 Implement `push_changes`
+    - For each user table in `changes`, upsert `created`+`updated` via `INSERT … ON CONFLICT (id) DO UPDATE SET … WHERE <table>.user_id = $userId`, and apply `deleted` via tombstone update scoped to `$userId`. Coerce column casing (snake_case Postgres ↔ camelCase DTO). Run within a transaction so a partial batch never half-applies.
+    - _Requirements: 7.6, 9.4–9.6_
+  - [ ] 16.4 Enforce auth scoping + content-table write rejection
+    - Every query is scoped to the authenticated `userId` from the Clerk JWT middleware; a client must never read or write another user's rows. Pushes targeting pull-only content tables are ignored (or rejected) rather than applied.
+    - _Requirements: 7.6_
+  - [ ] 16.5 Write worker sync tests
+    - Round-trip: push a bookmark → pull from a second cursor returns it; delete → pull reports the tombstone. User-scoping: user A cannot pull/overwrite user B's rows. Content tables reject pushes. Wire into / unblock the task 15.4 integration test (local Worker → Neon branch).
+    - _Requirements: 7.6, 9.4–9.6_
+
+- [~] 17. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 
@@ -423,7 +446,7 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP
 - Each task references specific requirements for traceability
-- Checkpoints at tasks 7, 11, and 16 ensure incremental validation
+- Checkpoints at tasks 7, 11, and 17 ensure incremental validation (task 16 implements the worker-side Neon sync deferred from task 2.4)
 - Property-based tests (fast-check, minimum 100 iterations each) validate universal correctness guarantees; unit tests validate specific examples and edge cases
 - All property tests must be tagged with `// Feature: servicenow-cert-study-app, Property N`
 - The design uses TypeScript throughout; all code examples and implementations use TypeScript with strict mode enabled
