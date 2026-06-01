@@ -14,6 +14,8 @@ Cross-platform mobile study app (iOS + Android) for ServiceNow certification exa
 - [SECURITY.md](SECURITY.md) — how to report vulnerabilities (private GitHub reporting and email).
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, checks before a PR, and **copy-paste text for the GitHub repo Description and topics**.
 - [CHANGELOG.md](CHANGELOG.md) — release notes; pair with [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) when you tag versions.
+- [.github/DISCUSSIONS.md](.github/DISCUSSIONS.md) — copy-paste **welcome post body** and category blurbs when you enable GitHub Discussions.
+- **Issues:** [Bug report](.github/ISSUE_TEMPLATE/bug_report.yml) and [Feature request](.github/ISSUE_TEMPLATE/feature_request.yml) templates (YAML forms; shown on **New issue**).
 
 ## Releases
 
