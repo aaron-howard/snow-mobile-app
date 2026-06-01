@@ -450,8 +450,9 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - `useCatalog` now passes `refreshContent: (examId) => downloadExamContent(examId, defaultDownloadDeps)` into `processContentUpdates`, so an enrolled+downloaded exam's content is actually re-fetched on a content update (Req 2.7). Updated the stale "wired in task 13.5" comments in [src/domain/catalog/contentUpdateDelivery.ts](src/domain/catalog/contentUpdateDelivery.ts) and `useCatalog`.
     - _Requirements: 2.7, 9.1_
 
-- [~] 17. Final checkpoint — Ensure all tests pass
+- [x] 17. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
+  - **Verified (all gates green):** app `tsc --noEmit` clean · worker `tsc --noEmit` clean · `eslint .` clean · Jest **71 suites / 341 tests** passing · property tests **26 suites / 81 tests** passing. The only test-time console output is the expected `EXPO_PUBLIC_API_BASE_URL not configured` dev warning (not a failure). All of tasks 1–16 are complete.
 
 
 ## Notes

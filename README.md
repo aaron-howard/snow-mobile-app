@@ -1,8 +1,24 @@
 # SN Cert Prep (Unofficial)
 
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
+[![Expo](https://img.shields.io/badge/Expo-54-000020?logo=expo)](https://expo.dev/)
+
 > **Unofficial. Not affiliated with or endorsed by ServiceNow, Inc.**
 
 Cross-platform mobile study app (iOS + Android) for ServiceNow certification exams. Built with React Native + Expo.
+
+## License, security, and contributing
+
+- [LICENSE](LICENSE) — **Apache License 2.0** (Copyright 2026 City of Dallas).
+- [SECURITY.md](SECURITY.md) — how to report vulnerabilities (private GitHub reporting and email).
+- [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, checks before a PR, and **copy-paste text for the GitHub repo Description and topics**.
+- [CHANGELOG.md](CHANGELOG.md) — release notes; pair with [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) when you tag versions.
+
+## Releases
+
+- Version tags use **`vMAJOR.MINOR.PATCH`** (e.g. `v0.1.0`). Summarize each release in [CHANGELOG.md](CHANGELOG.md), then create a **GitHub Release** from that tag and paste the same notes there.
+- Mobile binaries (TestFlight, Google Play internal testing, store builds) are **not** attached to this repository unless you add CI artifacts later.
 
 ## Project documentation
 
@@ -10,7 +26,7 @@ The authoritative specs live alongside the code:
 
 - [requirements.md](requirements.md) — what the app must do (EARS-format acceptance criteria, 11 requirement areas).
 - [design.md](design.md) — how it works (architecture, data models, 27 correctness properties, testing strategy).
-- [tasks.md](tasks.md) — implementation plan (16 task groups + dependency graph).
+- [tasks.md](tasks.md) — implementation plan (17 checkpoints / task groups + dependency graph).
 - [content-authoring.md](content-authoring.md) — how exam content is created, reviewed, and published.
 
 ## Getting started

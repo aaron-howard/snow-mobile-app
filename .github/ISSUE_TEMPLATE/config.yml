@@ -1,0 +1,9 @@
+# Issue template configuration
+# https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+
+blank_issues_enabled: true
+
+contact_links:
+  - name: Report a security vulnerability
+    about: Do not open a public issue for undisclosed vulnerabilities. Use this repository’s Security tab (private reporting) or follow SECURITY.md in the repo root.
+    url: https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability

@@ -67,4 +67,4 @@ Neon Postgres
 
 ## Status
 
-The routes in [`src/routes/sync.ts`](src/routes/sync.ts) are wired end-to-end but return empty change sets — the per-table SQL is not written yet. That lands when content-side seeding begins. See the comment block at the top of that file for the SQL shape each table will use.
+Sync routes in [`src/routes/sync.ts`](src/routes/sync.ts) are implemented against Neon with Clerk-scoped pull/push; see the root [design.md](../design.md) and [tasks.md](../tasks.md) for protocol details.
