@@ -15,6 +15,10 @@ jest.mock('@domain/practice/useQuiz', () => ({
   useQuiz: (...args: unknown[]) => mockUseQuiz(...args),
 }));
 
+jest.mock('@domain/bookmarks/useBookmarkToggle', () => ({
+  useBookmarkToggle: () => ({ ready: true, isBookmarked: () => false, toggle: jest.fn() }),
+}));
+
 const question: QuestionRecord = {
   id: 'q1',
   examId: 'exam-1',

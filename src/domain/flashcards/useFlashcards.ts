@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from '@clerk/clerk-expo';
 import { createRepositories } from '@db/repositories';
 import type { DeckDTO } from '@db/repositories/types';
 import { FlashcardSessionManager } from './FlashcardSessionManager';
 import { DEFAULT_EASE_FACTOR, SpacedRepetitionEngine } from './SpacedRepetitionEngine';
 import { validateFlashcard } from './validateFlashcard';
 import type { FlashcardRecord, FlashcardSessionSummary, ResponseQuality } from './types';
+
+export type FlashcardMode = 'standard' | 'bookmark';
 
 /** Swipe→quality mapping for SM-2 (Known = strong recall, Still Learning = weak). */
 const KNOWN_QUALITY: ResponseQuality = 5;
@@ -32,8 +35,12 @@ export interface UseFlashcardsResult {
   createError: string | null;
 }
 
-export function useFlashcards(examId: string | undefined): UseFlashcardsResult {
+export function useFlashcards(
+  examId: string | undefined,
+  mode: FlashcardMode = 'standard',
+): UseFlashcardsResult {
   const repos = useMemo(() => createRepositories(), []);
+  const { userId } = useAuth();
   const now = useCallback(() => Date.now(), []);
 
   const [loading, setLoading] = useState(true);
@@ -57,12 +64,28 @@ export function useFlashcards(examId: string | undefined): UseFlashcardsResult {
       setLoading(true);
       setError(null);
       try {
+        if (mode === 'bookmark') {
+          // Bookmark review presents only the exam's bookmarked flashcards (Req 7.4).
+          if (!userId) throw new Error('signed-out');
+          const bookmarks = await repos.bookmarks.listForUserAndExam(userId, examId);
+          const ids = bookmarks.filter((b) => b.itemType === 'flashcard').map((b) => b.itemId);
+          const loaded = await Promise.all(ids.map((id) => repos.flashcards.getById(id)));
+          const cards = loaded.filter((c): c is FlashcardRecord => c !== null);
+          if (cancelled) return;
+          outcomes.current = new Map();
+          setSummary(null);
+          setKnownCount(0);
+          setStillLearningCount(0);
+          setDecks([]);
+          setPool(cards);
+          return;
+        }
         const deckList = await repos.decks.listByExam(examId);
         if (cancelled) return;
         setDecks(deckList);
         setSelectedDeckId((prev) => prev ?? deckList[0]?.id ?? null);
       } catch {
-        if (!cancelled) setError('Could not load flashcard decks. Please try again.');
+        if (!cancelled) setError('Could not load flashcards. Please try again.');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -70,7 +93,7 @@ export function useFlashcards(examId: string | undefined): UseFlashcardsResult {
     return () => {
       cancelled = true;
     };
-  }, [examId, repos]);
+  }, [examId, repos, mode, userId]);
 
   const recomputeCounts = useCallback(() => {
     let known = 0;

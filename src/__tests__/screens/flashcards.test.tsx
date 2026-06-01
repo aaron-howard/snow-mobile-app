@@ -14,6 +14,10 @@ jest.mock('@domain/flashcards/useFlashcards', () => ({
   useFlashcards: (...args: unknown[]) => mockUseFlashcards(...args),
 }));
 
+jest.mock('@domain/bookmarks/useBookmarkToggle', () => ({
+  useBookmarkToggle: () => ({ ready: true, isBookmarked: () => false, toggle: jest.fn() }),
+}));
+
 const card: FlashcardRecord = {
   id: 'fc1',
   deckId: 'deck-1',

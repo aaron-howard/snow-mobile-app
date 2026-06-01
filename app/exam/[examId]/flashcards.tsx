@@ -11,10 +11,13 @@ import {
   View,
 } from 'react-native';
 import { FlashcardDeck } from '@ui/FlashcardDeck';
-import { useFlashcards } from '@domain/flashcards/useFlashcards';
+import { BookmarkButton } from '@ui/BookmarkButton';
+import { useFlashcards, type FlashcardMode } from '@domain/flashcards/useFlashcards';
+import { useBookmarkToggle } from '@domain/bookmarks/useBookmarkToggle';
 
 export default function FlashcardsScreen() {
-  const { examId } = useLocalSearchParams<{ examId: string }>();
+  const { examId, mode } = useLocalSearchParams<{ examId: string; mode?: string }>();
+  const fcMode: FlashcardMode = mode === 'bookmark' ? 'bookmark' : 'standard';
   const {
     loading,
     error,
@@ -32,7 +35,9 @@ export default function FlashcardsScreen() {
     createCustomCard,
     creating,
     createError,
-  } = useFlashcards(examId);
+  } = useFlashcards(examId, fcMode);
+  const isBookmarkMode = fcMode === 'bookmark';
+  const { isBookmarked, toggle } = useBookmarkToggle(examId);
 
   const [createVisible, setCreateVisible] = useState(false);
   const [term, setTerm] = useState('');
@@ -53,16 +58,18 @@ export default function FlashcardsScreen() {
     <View style={styles.screen}>
       <View style={styles.headerRow}>
         <Text style={styles.heading} accessibilityRole="header">
-          Flashcards
+          {isBookmarkMode ? 'Bookmarked flashcards' : 'Flashcards'}
         </Text>
-        <Pressable
-          onPress={openCreate}
-          accessibilityRole="button"
-          accessibilityLabel="Add a custom flashcard"
-          style={styles.addButton}
-        >
-          <Text style={styles.addLabel}>+ Add</Text>
-        </Pressable>
+        {!isBookmarkMode ? (
+          <Pressable
+            onPress={openCreate}
+            accessibilityRole="button"
+            accessibilityLabel="Add a custom flashcard"
+            style={styles.addButton}
+          >
+            <Text style={styles.addLabel}>+ Add</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       {loading ? (
@@ -110,6 +117,13 @@ export default function FlashcardsScreen() {
           <Text style={styles.stat} accessibilityLabel={`${remaining} remaining`}>
             {remaining} left
           </Text>
+          {currentCard && examId ? (
+            <BookmarkButton
+              active={isBookmarked('flashcard', currentCard.id)}
+              itemLabel="flashcard"
+              onToggle={() => void toggle({ id: currentCard.id, itemType: 'flashcard', examId })}
+            />
+          ) : null}
           {currentCard ? (
             <Pressable
               onPress={endSession}

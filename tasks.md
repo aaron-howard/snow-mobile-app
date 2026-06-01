@@ -265,36 +265,33 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
   > **Bonus (Property 16):** the readiness-80 trigger `shouldSendReadiness80` lives in [readinessNotifications.ts](src/domain/analytics/readinessNotifications.ts) with its property test, satisfying 9.7's notification trigger + 9.9's coverage even though it isn't a standalone numbered subtask. The full `NotificationScheduler` arrives in task 12.
 
 
-- [ ] 10. Bookmarks and review lists
-  - [~] 10.1 Implement `BookmarkService`: `toggleBookmark`, `getBookmarksForExam`, `sortByDateDescending`, `groupByExam`
-    - Toggle is idempotent (involution): double-toggle restores original state
+[x] 10. Bookmarks and review lists
+  - **Domain layer in [src/domain/bookmarks/](src/domain/bookmarks/)** (barrel: [index.ts](src/domain/bookmarks/index.ts), types: [types.ts](src/domain/bookmarks/types.ts) — `BookmarkRecord` aliases the data-layer `BookmarkDTO`; `BookmarkableItem` = `{ id, itemType, examId }`). The barrel exports only the pure `BookmarkService` + types; the hooks live alongside but aren't re-exported. Full suite after this task: **221/221 passing** (48 suites), `tsc --noEmit` + `eslint` clean.
+  - [x] 10.1 Implement `BookmarkService` — [BookmarkService.ts](src/domain/bookmarks/BookmarkService.ts)
+    - `toggleBookmark(item, list, now?, makeId?)` adds when absent / removes when present (matched by `itemType+itemId+examId`); pure, non-mutating. `getBookmarksForExam`, `sortByDateDescending` (stable, descending `createdAt`), `groupByExam` (insertion order preserved → a pre-sorted list yields sorted groups). Optional `now`/`makeId` keep adds deterministic (the persisted id/timestamp come from the repository on save).
     - _Requirements: 7.1–7.4_
-  - [~] 10.2 Write property test for bookmark toggle involution
-    - **Property 18: Bookmark toggle is an involution**
-    - Use `fc.record` of item + `fc.boolean()` initial state; verify double-toggle restores original state and bookmark list is unchanged
+  - [x] 10.2 Property test for toggle involution — [bookmarkToggle.property.test.ts](src/domain/bookmarks/__tests__/bookmarkToggle.property.test.ts)
+    - **Property 18** — 300 iters with a random item + boolean initial state + other bookmarks; asserts a single toggle flips membership and a double toggle restores the original bookmarked-item set (compared by identity key, since a re-added row gets a fresh id/timestamp).
     - Tag: `// Feature: servicenow-cert-study-app, Property 18`
     - **Validates: Requirements 7.1, 7.2**
-  - [~] 10.3 Write property test for bookmark list grouping and sort order
-    - **Property 19: Bookmark list is grouped by exam and sorted by date descending**
-    - Use `fc.array` of bookmarks with random examIds and timestamps; verify grouping and descending sort within each group
+  - [x] 10.3 Property test for grouping + sort order — [bookmarkGrouping.property.test.ts](src/domain/bookmarks/__tests__/bookmarkGrouping.property.test.ts)
+    - **Property 19** — 300 iters; sorts then groups, asserting every group member belongs to its exam, each group is descending by `createdAt`, and no bookmark is lost.
     - Tag: `// Feature: servicenow-cert-study-app, Property 19`
     - **Validates: Requirements 7.3**
-  - [~] 10.4 Write property test for bookmark session exam filter
-    - **Property 20: Bookmark session presents only items for the selected exam**
-    - Use `fc.array` of bookmarks with multiple examIds; verify only selected exam's bookmarks returned
+  - [x] 10.4 Property test for exam filter — [bookmarkExamFilter.property.test.ts](src/domain/bookmarks/__tests__/bookmarkExamFilter.property.test.ts)
+    - **Property 20** — 300 iters over bookmarks with multiple exam ids; asserts `getBookmarksForExam` returns exactly (and only) the selected exam's bookmarks.
     - Tag: `// Feature: servicenow-cert-study-app, Property 20`
     - **Validates: Requirements 7.4**
-  - [~] 10.5 Build `BookmarkButton` shared component
-    - Animated icon transitioning between active/inactive states within 500 ms (Requirements 7.1, 7.2)
-    - Include `accessibilityLabel` reflecting current state (Requirement 10.1)
+  - [x] 10.5 Build `BookmarkButton` shared component — [BookmarkButton.tsx](src/ui/BookmarkButton.tsx)
+    - Filled (★) / outline (☆) star with a Reanimated scale transition (`BOOKMARK_ANIM_MS = 200`, well within the 500 ms budget — Req 7.1, 7.2); `accessibilityLabel` reflects state ("Bookmark this …" / "Remove bookmark for this …") + `accessibilityState.selected` (Req 10.1); honors `disabled`.
     - _Requirements: 7.1, 7.2, 10.1_
-  - [~] 10.6 Build bookmarks screen (`app/bookmarks.tsx`)
-    - Display bookmarks grouped by exam, sorted most-recent-first (Requirement 7.3)
-    - Start Quiz or Flashcard session from bookmark list; show empty-state message when no bookmarks for selected exam (Requirements 7.4, 7.5)
-    - Implement cross-device sync within 30 seconds via WatermelonDB + Neon (Worker `push_changes` / `pull_changes` RPCs) (Requirement 7.6)
+  - [x] 10.6 Build bookmarks screen + hooks — [app/bookmarks.tsx](app/bookmarks.tsx), [useBookmarks.ts](src/domain/bookmarks/useBookmarks.ts), [useBookmarkToggle.ts](src/domain/bookmarks/useBookmarkToggle.ts)
+    - `useBookmarks` loads all of the user's bookmarks, sorts + groups by exam (with exam names + per-type counts), removes (optimistic + persist), and triggers `syncWithApi` on mount + after changes. The screen renders grouped, most-recent-first cards (Req 7.3) with per-exam **Start quiz** / **Review flashcards** buttons that are disabled (and prevent navigation) when that exam has no items of that type (Req 7.5), an overall empty-state, and a `BookmarkButton` per row to remove. **Cross-device sync (Req 7.6)** reuses the existing [src/db/sync.ts](src/db/sync.ts) `syncWithApi` (`/sync/push_changes` + `/sync/pull_changes`); a best-effort sync is fired right after each bookmark mutation so changes propagate well within 30 s.
+    - **Creation path wired:** `useBookmarkToggle(examId)` (optimistic per-item toggle + sync) is mounted in the quiz screen (star beside the question progress) and the flashcards session bar, so questions/flashcards can actually be bookmarked (Req 7.1, 7.2). Existing quiz/flashcards screen tests mock the hook.
+    - **Flashcard bookmark sessions (Req 7.4):** `useFlashcards` gained a `mode: 'standard' | 'bookmark'` param; in bookmark mode it loads only the exam's bookmarked flashcards (via `bookmarks.listForUserAndExam` + `flashcards.getById`) and the screen hides the deck picker / add-card. Quiz bookmark sessions already worked via `QuizSessionManager.startBookmarkSession` + `?mode=bookmark`.
     - _Requirements: 7.1–7.6_
-  - [~] 10.7 Write unit tests for BookmarkService and bookmarks screen
-    - Test bookmark toggle state transitions, empty-state message, session start prevention with no bookmarks
+  - [x] 10.7 Write unit tests — [BookmarkService.test.ts](src/domain/bookmarks/__tests__/BookmarkService.test.ts), [BookmarkButton.test.tsx](src/ui/__tests__/BookmarkButton.test.tsx), [bookmarks.test.tsx](src/__tests__/screens/bookmarks.test.tsx)
+    - Service add/remove/type-mismatch/filter/sort-no-mutate/group-order; button state labels + press + disabled; screen grouping/counts, quiz + flashcard session launch, disabled+blocked start when a type is empty (Req 7.5), row removal, empty-state.
     - _Requirements: 7.1–7.6_
 
 

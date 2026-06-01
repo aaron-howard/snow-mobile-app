@@ -1,12 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { QuestionCard } from '@ui/QuestionCard';
+import { BookmarkButton } from '@ui/BookmarkButton';
 import { useQuiz, type QuizMode } from '@domain/practice/useQuiz';
+import { useBookmarkToggle } from '@domain/bookmarks/useBookmarkToggle';
 
 export default function QuizScreen() {
   const { examId, mode } = useLocalSearchParams<{ examId: string; mode?: string }>();
   const router = useRouter();
   const quizMode: QuizMode = mode === 'bookmark' ? 'bookmark' : 'standard';
+  const { isBookmarked, toggle } = useBookmarkToggle(examId);
 
   const {
     loading,
@@ -114,9 +117,20 @@ export default function QuizScreen() {
             </Text>
           ) : null}
 
-          <Text style={styles.progress} accessibilityLabel={`Question ${currentIndex + 1} of ${total}`}>
-            Question {currentIndex + 1} of {total}
-          </Text>
+          <View style={styles.progressRow}>
+            <Text style={styles.progress} accessibilityLabel={`Question ${currentIndex + 1} of ${total}`}>
+              Question {currentIndex + 1} of {total}
+            </Text>
+            {examId ? (
+              <BookmarkButton
+                active={isBookmarked('question', current.question.id)}
+                itemLabel="question"
+                onToggle={() =>
+                  void toggle({ id: current.question.id, itemType: 'question', examId })
+                }
+              />
+            ) : null}
+          </View>
 
           <QuestionCard
             question={current.question}
@@ -196,10 +210,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 12,
   },
+  progressRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   progress: {
     color: '#94A3B8',
     fontSize: 14,
-    marginBottom: 12,
   },
   inlineSpinner: {
     marginTop: 16,
