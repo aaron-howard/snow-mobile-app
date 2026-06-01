@@ -230,42 +230,39 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 5.1–5.9_
 
 
-- [ ] 9. Progress tracking and analytics
-  - [~] 9.1 Implement `ReadinessScoreCalculator.calculate(sessions, domainWeights)` pure function
-    - Use only sessions completed within the last 30 days; weight by domain importance; cap result at 100
+[x] 9. Progress tracking and analytics
+  - **Domain layer in [src/domain/analytics/](src/domain/analytics/)** (barrel: [index.ts](src/domain/analytics/index.ts), types: [types.ts](src/domain/analytics/types.ts)) — exports pure calculators + the readiness-80 trigger + types, never the `useProgress`/`useProfile` hooks. Full suite after this task: **202/202 passing** (42 suites), `tsc --noEmit` + `eslint` clean.
+  - [x] 9.1 Implement `ReadinessScoreCalculator.calculate(sessions, domainWeights, now?)` — [ReadinessScoreCalculator.ts](src/domain/analytics/ReadinessScoreCalculator.ts)
+    - Filters to sessions completed within the last 30 days (`READINESS_WINDOW_MS`), averages each domain's recent scores, then combines those domain averages weighted by `weightPercent`; clamps the result to [0,100] (cap at 100). Falls back to an unweighted average when no scored domain carries positive weight; 0 with no recent sessions. Epoch-ms timestamps + optional `now` (the design's `Date`-based signature is bridged to numbers for DTO alignment).
     - _Requirements: 6.4, 6.5_
-  - [~] 9.2 Write property test for readiness score bounds and session filtering
-    - **Property 15: Readiness score is bounded in [0, 100] and ignores sessions older than 30 days**
-    - Use `fc.array` of sessions with dates spanning > 30 days + domain weights; verify result in [0, 100] and equals score with only recent sessions
+  - [x] 9.2 Property test for readiness bounds + 30-day filter — [readinessScore.property.test.ts](src/domain/analytics/__tests__/readinessScore.property.test.ts)
+    - **Property 15** — 300 iters with sessions spanning ~60 days + random domain weights; asserts result ∈ [0,100] and equals the score computed from only the last-30-day subset.
     - Tag: `// Feature: servicenow-cert-study-app, Property 15`
     - **Validates: Requirements 6.4, 6.5**
-  - [~] 9.3 Implement `StreakTracker.compute(sessionDates, today)` pure function
-    - Increment by 1 per distinct calendar day (local timezone) with a session; reset to 0 on missed day
+  - [x] 9.3 Implement `StreakTracker.compute(sessionDates, today)` — [StreakTracker.ts](src/domain/analytics/StreakTracker.ts)
+    - Distinct local-timezone calendar days; current = consecutive run ending today (or yesterday, since the current day isn't "missed" until it passes); longest = longest consecutive run anywhere. Keeps the design's `Date[]`/`today: Date` signature.
     - _Requirements: 6.7_
-  - [~] 9.4 Write property test for streak tracking
-    - **Property 17: Streak increments exactly once per calendar day with a session, resets on missed day**
-    - Use `fc.array(fc.date())` of session timestamps; verify streak matches expected calendar-day count
+  - [x] 9.4 Property test for streak tracking — [streak.property.test.ts](src/domain/analytics/__tests__/streak.property.test.ts)
+    - **Property 17** — 300 iters over random dates within a 40-day window vs an independent reference implementation; asserts current + longest match; plus missed-day-reset and consecutive-days cases.
     - Tag: `// Feature: servicenow-cert-study-app, Property 17`
     - **Validates: Requirements 6.7**
-  - [~] 9.5 Implement `Progress_Tracker` data recording
-    - Record score, date, and duration for every session where user submits all questions or explicitly ends the session (Requirement 6.1)
+  - [x] 9.5 `Progress_Tracker` data recording (duration) — [WatermelonStudySessionRepository.ts](src/db/repositories/WatermelonStudySessionRepository.ts), [QuizSessionManager.ts](src/domain/practice/QuizSessionManager.ts), [ExamSimulatorController.ts](src/domain/simulator/ExamSimulatorController.ts)
+    - Score + date were already recorded on session completion; this closes the gap by recording **duration**. `StudySessionRepository.complete` now accepts an optional `durationSeconds` (set on the row when provided); `QuizSessionManager.endSession` and `ExamSimulatorController.submitSimulator` compute `durationSeconds = round((completedAt − startedAt) / 1000)` (quiz tracks `startedAt` on its in-memory session). Optional so existing fakes/`objectContaining` assertions stay valid.
     - _Requirements: 6.1_
-  - [~] 9.6 Build `DomainAccuracyChart`, `ProgressRing`, and `StudyCalendar` shared components
-    - `DomainAccuracyChart`: bar chart with text labels alongside color coding (no color-only indicators) (Requirements 6.2, 10.4)
-    - `ProgressRing`: circular readiness score 0–100 with text label (Requirement 6.5)
-    - `StudyCalendar`: highlight days with at least one completed session (Requirement 6.3)
-    - All components include `accessibilityLabel` and `accessibilityRole` (Requirement 10.1)
+  - [x] 9.6 Build `ProgressRing`, `DomainAccuracyChart`, `StudyCalendar` shared components — [ProgressRing.tsx](src/ui/ProgressRing.tsx), [DomainAccuracyChart.tsx](src/ui/DomainAccuracyChart.tsx), [StudyCalendar.tsx](src/ui/StudyCalendar.tsx)
+    - `ProgressRing`: bordered circle, score band color **plus** the numeric label (Req 6.5, 10.4), `accessibilityRole="progressbar"` + `accessibilityValue`. `DomainAccuracyChart`: one bar per domain with `name`, `percent% (correct/total)` text label, and band color (no color-only indicators — Req 6.2, 10.4). `StudyCalendar`: month grid highlighting studied days with a distinct background + per-day `accessibilityLabel` (Req 6.3, 10.1). **Built from RN primitives instead of `react-native-svg`** (design suggestion) to stay dependency-free and reliably testable — noted deviation.
     - _Requirements: 6.2, 6.3, 6.5, 10.1, 10.4_
-  - [~] 9.7 Build progress dashboard screen (`app/(tabs)/progress.tsx`)
-    - Display per-domain accuracy chart, study activity calendar, readiness score, and readiness-80 notification trigger (Requirements 6.2–6.6)
-    - Display empty-state message when no session data exists (Requirement 6.9)
+  - [x] 9.7 Build progress dashboard screen + `useProgress` hook — [app/(tabs)/progress.tsx](app/(tabs)/progress.tsx), [useProgress.ts](src/domain/analytics/useProgress.ts), [useEnrolledExams.ts](src/domain/catalog/useEnrolledExams.ts)
+    - No global "active exam" exists yet, so the tab renders an enrolled-exam picker (`useEnrolledExams`) and shows the dashboard for the selected one. `useProgress` assembles per-domain accuracy (new `attempts.accuracyByDomain` repo method), study-activity days, and a weighted readiness score over the last 30 days. **Readiness wiring:** since `study_sessions` stores an overall score without a domain breakdown, readiness is fed one synthetic per-domain `StudySessionScore` derived from last-30-day per-domain accuracy — keeps the pure calculator faithful while using real data. Readiness-80 banner uses `shouldSendReadiness80` against the last-sent timestamp (full crossing detection is task 12); dismissing records a `readiness_80` notification so it stays dismissed. Empty-state message when no quiz/simulator session data exists (Req 6.9).
     - _Requirements: 6.2–6.6, 6.9_
-  - [~] 9.8 Build profile screen (`app/(tabs)/profile.tsx`)
-    - Display current streak, longest streak, total questions answered, total study sessions (Requirement 6.8)
+  - [x] 9.8 Build profile screen + `useProfile` hook — [app/(tabs)/profile.tsx](app/(tabs)/profile.tsx), [useProfile.ts](src/domain/analytics/useProfile.ts)
+    - Aggregates across all enrolled exams from `study_sessions` (no reliance on separately-maintained counters): current/longest streak via `StreakTracker`, total questions answered (sum of `totalQuestions`), total completed study sessions. Four accessible stat cards (Req 6.8).
     - _Requirements: 6.8_
-  - [~] 9.9 Write unit tests for ReadinessScoreCalculator, StreakTracker, progress dashboard, and profile screen
-    - Test empty-state message, readiness-80 notification trigger, streak reset, score capping at 100
+  - [x] 9.9 Write unit tests — [ReadinessScoreCalculator.test.ts](src/domain/analytics/__tests__/ReadinessScoreCalculator.test.ts), [StreakTracker.test.ts](src/domain/analytics/__tests__/StreakTracker.test.ts), [readiness80.property.test.ts](src/domain/analytics/__tests__/readiness80.property.test.ts), [ProgressRing.test.tsx](src/ui/__tests__/ProgressRing.test.tsx), [DomainAccuracyChart.test.tsx](src/ui/__tests__/DomainAccuracyChart.test.tsx), [StudyCalendar.test.tsx](src/ui/__tests__/StudyCalendar.test.tsx), [progress.test.tsx](src/__tests__/screens/progress.test.tsx), [profile.test.tsx](src/__tests__/screens/profile.test.tsx)
+    - Calculator weighting/averaging/cap/empty; streak same-day/yesterday-grace/reset/longest-vs-current; **Property 16** (`shouldSendReadiness80`, 300 iters) for the readiness-80 trigger (first reach, re-send only after a sub-80 dip, never below 80); component label/clamp/marking; screen empty-state, readiness-80 banner, score render, profile totals.
     - _Requirements: 6.1–6.9_
+
+  > **Bonus (Property 16):** the readiness-80 trigger `shouldSendReadiness80` lives in [readinessNotifications.ts](src/domain/analytics/readinessNotifications.ts) with its property test, satisfying 9.7's notification trigger + 9.9's coverage even though it isn't a standalone numbered subtask. The full `NotificationScheduler` arrives in task 12.
 
 
 - [ ] 10. Bookmarks and review lists

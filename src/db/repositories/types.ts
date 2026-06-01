@@ -266,14 +266,33 @@ export interface StudySessionRepository {
   ): Promise<StudySessionDTO>;
   complete(
     id: string,
-    completion: { completedAt: number; score: number; correctAnswers: number },
+    completion: {
+      completedAt: number;
+      score: number;
+      correctAnswers: number;
+      /** Elapsed session time in seconds (Requirement 6.1). */
+      durationSeconds?: number;
+    },
   ): Promise<void>;
   listForUserExam(userId: string, examId: string, sinceMs?: number): Promise<StudySessionDTO[]>;
+}
+
+/** Per-domain correct/total tally for the progress dashboard accuracy chart. */
+export interface DomainAccuracyTally {
+  domainId: string;
+  correct: number;
+  total: number;
 }
 
 export interface UserQuestionAttemptRepository {
   create(attempt: Omit<UserQuestionAttemptDTO, 'id'>): Promise<UserQuestionAttemptDTO>;
   countIncorrectByQuestion(userId: string, examId: string): Promise<Map<string, number>>;
+  /**
+   * Per-domain accuracy for an exam (Requirement 6.2). Optionally restricted to
+   * attempts on/after `sinceMs` (used to scope the readiness score to the last
+   * 30 days). When a question has multiple attempts, every attempt counts.
+   */
+  accuracyByDomain(userId: string, examId: string, sinceMs?: number): Promise<DomainAccuracyTally[]>;
 }
 
 export interface BookmarkRepository {

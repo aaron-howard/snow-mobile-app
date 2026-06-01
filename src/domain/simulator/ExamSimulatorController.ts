@@ -174,6 +174,7 @@ export class ExamSimulatorController {
       completedAt: submittedAt,
       score: result.scorePercent,
       correctAnswers: result.correctAnswers,
+      durationSeconds: Math.max(0, Math.round((submittedAt - sim.startedAt) / 1000)),
     });
 
     this.cache.delete(sessionId);

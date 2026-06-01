@@ -3,6 +3,7 @@ import type { Database } from '@nozbe/watermelondb';
 import type { UserQuestionAttempt } from '../models/UserQuestionAttempt';
 import type { Question } from '../models/Question';
 import type {
+  DomainAccuracyTally,
   UserQuestionAttemptDTO,
   UserQuestionAttemptRepository,
 } from './types';
@@ -49,6 +50,50 @@ export class WatermelonUserQuestionAttemptRepository implements UserQuestionAtte
       counts.set(attempt.questionId, (counts.get(attempt.questionId) ?? 0) + 1);
     }
     return counts;
+  }
+
+  async accuracyByDomain(
+    userId: string,
+    examId: string,
+    sinceMs?: number,
+  ): Promise<DomainAccuracyTally[]> {
+    // Step 1: map this exam's question IDs to their domain.
+    const examQuestions = await this.db
+      .get<Question>('questions')
+      .query(Q.where('exam_id', examId))
+      .fetch();
+    if (examQuestions.length === 0) return [];
+    const domainByQuestion = new Map(examQuestions.map((q) => [q.id, q.domainId]));
+
+    // Step 2: fetch the user's attempts on those questions (optionally recent).
+    const conditions = [
+      Q.where('user_id', userId),
+      Q.where('question_id', Q.oneOf([...domainByQuestion.keys()])),
+    ];
+    if (sinceMs !== undefined) {
+      conditions.push(Q.where('attempted_at', Q.gte(sinceMs)));
+    }
+    const attempts = await this.db
+      .get<UserQuestionAttempt>('user_question_attempts')
+      .query(...conditions)
+      .fetch();
+
+    // Step 3: tally correct/total per domain.
+    const tallies = new Map<string, { correct: number; total: number }>();
+    for (const attempt of attempts) {
+      const domainId = domainByQuestion.get(attempt.questionId);
+      if (domainId === undefined) continue;
+      const tally = tallies.get(domainId) ?? { correct: 0, total: 0 };
+      tally.total += 1;
+      if (attempt.isCorrect) tally.correct += 1;
+      tallies.set(domainId, tally);
+    }
+
+    return [...tallies.entries()].map(([domainId, t]) => ({
+      domainId,
+      correct: t.correct,
+      total: t.total,
+    }));
   }
 }
 

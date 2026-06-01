@@ -34,6 +34,8 @@ interface ActiveSession {
   /** questionId -> latest answer state for this session. */
   answers: Map<string, AnswerState>;
   poolWasReset: boolean;
+  /** Epoch ms the session row was created, for duration recording (Req 6.1). */
+  startedAt: number;
 }
 
 /**
@@ -147,10 +149,12 @@ export class QuizSessionManager {
     const incorrect = answered - correct;
     const scorePercent = answered === 0 ? 0 : Math.round((correct / answered) * 100);
 
+    const completedAt = this.now();
     await this.deps.studySessions.complete(sessionId, {
-      completedAt: this.now(),
+      completedAt,
       score: scorePercent,
       correctAnswers: correct,
+      durationSeconds: Math.max(0, Math.round((completedAt - session.startedAt) / 1000)),
     });
 
     this.sessions.delete(sessionId);
@@ -205,6 +209,7 @@ export class QuizSessionManager {
       byId: new Map(quizQuestions.map((q) => [q.question.id, q])),
       answers: new Map(),
       poolWasReset,
+      startedAt: row.startedAt,
     });
 
     return {

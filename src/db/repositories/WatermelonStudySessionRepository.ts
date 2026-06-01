@@ -28,7 +28,12 @@ export class WatermelonStudySessionRepository implements StudySessionRepository 
 
   async complete(
     id: string,
-    completion: { completedAt: number; score: number; correctAnswers: number },
+    completion: {
+      completedAt: number;
+      score: number;
+      correctAnswers: number;
+      durationSeconds?: number;
+    },
   ): Promise<void> {
     await this.db.write(async () => {
       const row = await this.db.get<StudySession>('study_sessions').find(id);
@@ -36,6 +41,9 @@ export class WatermelonStudySessionRepository implements StudySessionRepository 
         r.completedAt = completion.completedAt;
         r.score = completion.score;
         r.correctAnswers = completion.correctAnswers;
+        if (completion.durationSeconds !== undefined) {
+          r.durationSeconds = completion.durationSeconds;
+        }
       });
     });
   }
