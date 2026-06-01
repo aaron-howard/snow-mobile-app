@@ -1,6 +1,10 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
+import QuizScreen from '../../../app/exam/[examId]/quiz';
+import type { AnswerChoiceRecord, QuestionRecord, QuizSession } from '@domain/practice';
+import type { UseQuizResult } from '@domain/practice/useQuiz';
+
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ examId: 'exam-1' }),
   useRouter: () => ({ back: jest.fn() }),
@@ -10,10 +14,6 @@ const mockUseQuiz = jest.fn();
 jest.mock('@domain/practice/useQuiz', () => ({
   useQuiz: (...args: unknown[]) => mockUseQuiz(...args),
 }));
-
-import QuizScreen from '../../../app/exam/[examId]/quiz';
-import type { AnswerChoiceRecord, QuestionRecord, QuizSession } from '@domain/practice';
-import type { UseQuizResult } from '@domain/practice/useQuiz';
 
 const question: QuestionRecord = {
   id: 'q1',

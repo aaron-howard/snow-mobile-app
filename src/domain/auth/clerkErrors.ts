@@ -13,11 +13,11 @@ import { AuthTimeoutError } from './withTimeout';
 
 /** Clerk errors are objects with an `errors[]` array. Narrow defensively. */
 interface ClerkErrorShape {
-  errors: Array<{
+  errors: {
     code?: string;
     message?: string;
     longMessage?: string;
-  }>;
+  }[];
 }
 
 function isClerkError(err: unknown): err is ClerkErrorShape {

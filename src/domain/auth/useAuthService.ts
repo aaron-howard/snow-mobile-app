@@ -204,7 +204,7 @@ export function useAuthService(): AuthService {
     } catch (err) {
       // Sign-out failures are extremely rare and not worth blocking the
       // UI on — just log and move on. The local session will time out.
-      // eslint-disable-next-line no-console
+       
       console.warn('[auth] signOut failed', err);
     }
   }, [clerkSignOut]);

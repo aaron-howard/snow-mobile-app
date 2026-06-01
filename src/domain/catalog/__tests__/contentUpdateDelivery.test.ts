@@ -8,11 +8,10 @@ import type {
 } from '@db/repositories/types';
 import {
   CONTENT_REFRESH_WINDOW_MS,
-  ContentUpdateDelivery,
-  ExamDownloadState,
   planContentUpdateDeliveries,
   processContentUpdates,
 } from '../contentUpdateDelivery';
+import type { ContentUpdateDelivery, ExamDownloadState } from '../contentUpdateDelivery';
 
 const NOW = 1_700_000_000_000;
 

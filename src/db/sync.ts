@@ -126,7 +126,7 @@ export function startSyncWatcher(opts: SyncOptions): WatcherHandle {
     pendingSync = true;
     syncWithApi(opts)
       .catch((err: unknown) => {
-        // eslint-disable-next-line no-console
+         
         console.warn('[sync] sync attempt failed', err);
       })
       .finally(() => {

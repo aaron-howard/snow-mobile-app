@@ -10,6 +10,9 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+// Import AFTER mocks are registered.
+import LoginScreen from '../../../app/(auth)/login';
+
 // --- Mocks ------------------------------------------------------------
 
 jest.mock('@clerk/clerk-expo', () => ({
@@ -47,9 +50,6 @@ jest.mock('../../domain/auth', () => ({
   MIN_PASSWORD_LENGTH: 8,
   MAX_PASSWORD_LENGTH: 128,
 }));
-
-// Import AFTER mocks are registered.
-import LoginScreen from '../../../app/(auth)/login';
 
 describe('LoginScreen', () => {
   beforeEach(() => {

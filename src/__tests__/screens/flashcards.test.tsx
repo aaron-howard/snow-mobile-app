@@ -1,6 +1,10 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+import FlashcardsScreen from '../../../app/exam/[examId]/flashcards';
+import type { UseFlashcardsResult } from '@domain/flashcards/useFlashcards';
+import type { FlashcardRecord } from '@domain/flashcards';
+
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ examId: 'exam-1' }),
 }));
@@ -9,10 +13,6 @@ const mockUseFlashcards = jest.fn();
 jest.mock('@domain/flashcards/useFlashcards', () => ({
   useFlashcards: (...args: unknown[]) => mockUseFlashcards(...args),
 }));
-
-import FlashcardsScreen from '../../../app/exam/[examId]/flashcards';
-import type { UseFlashcardsResult } from '@domain/flashcards/useFlashcards';
-import type { FlashcardRecord } from '@domain/flashcards';
 
 const card: FlashcardRecord = {
   id: 'fc1',

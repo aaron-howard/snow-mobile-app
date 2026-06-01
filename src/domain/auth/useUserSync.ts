@@ -36,7 +36,7 @@ export function useUserSync(): void {
         totalStudySessions: 0,
       })
       .catch((err: unknown) => {
-        // eslint-disable-next-line no-console
+         
         console.warn('[auth] user upsert failed', err);
       });
   }, [isLoaded, user]);

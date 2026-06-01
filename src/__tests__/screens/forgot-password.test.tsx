@@ -4,6 +4,8 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+import ForgotPasswordScreen from '../../../app/(auth)/forgot-password';
+
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: () => ({}),
   useSignIn: () => ({}),
@@ -37,8 +39,6 @@ jest.mock('../../domain/auth', () => ({
   MIN_PASSWORD_LENGTH: 8,
   MAX_PASSWORD_LENGTH: 128,
 }));
-
-import ForgotPasswordScreen from '../../../app/(auth)/forgot-password';
 
 describe('ForgotPasswordScreen', () => {
   beforeEach(() => {

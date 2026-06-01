@@ -13,7 +13,7 @@ import { TextDecoder, TextEncoder } from 'util';
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}), { virtual: true });
 
 jest.mock('@react-native-async-storage/async-storage', () =>
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
@@ -21,15 +21,13 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 // TS that isn't in our transform allowlist). Covers the surface FlashcardDeck
 // uses: Animated.View plus the shared-value/animated-style/timing/runOnJS hooks.
 jest.mock('react-native-reanimated', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
-  const Animated = {
-    View: React.forwardRef((props: Record<string, unknown>, ref: unknown) =>
-      React.createElement(View, { ...props, ref }),
-    ),
-  };
+  const AnimatedView = React.forwardRef((props: Record<string, unknown>, ref: unknown) =>
+    React.createElement(View, { ...props, ref }),
+  );
+  AnimatedView.displayName = 'AnimatedViewMock';
+  const Animated = { View: AnimatedView };
   return {
     __esModule: true,
     default: Animated,
@@ -46,9 +44,7 @@ jest.mock('react-native-reanimated', () => {
 // the Gesture builders are chainable no-ops. Component tests exercise the
 // accessible button path rather than synthesizing pan gestures.
 jest.mock('react-native-gesture-handler', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
   const makeGesture = () => {
     const gesture: Record<string, (...args: unknown[]) => unknown> = {};

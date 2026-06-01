@@ -83,21 +83,6 @@ export function createRepositories(): Repositories {
   };
 }
 
-export type {
-  AnswerChoiceRepository,
-  BlueprintSkillRepository,
-  BookmarkRepository,
-  ContentUpdateNotificationRepository,
-  DeckRepository,
-  ExamRepository,
-  FlashcardRepository,
-  NotificationSettingsRepository,
-  QuestionRepository,
-  ReadinessScoreNotificationRepository,
-  SimulatorSessionRepository,
-  StudySessionRepository,
-  TopicDomainRepository,
-  UserQuestionAttemptRepository,
-  UserRepository,
-} from './types';
+// Re-export every repository interface + DTO so domain code can import from the
+// barrel (`@db/repositories`) rather than reaching into `./types` directly.
 export * from './types';

@@ -17,7 +17,7 @@ const tokenCache: TokenCache = {
     try {
       return await SecureStore.getItemAsync(key);
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[clerk] SecureStore.getItemAsync failed', err);
       return null;
     }
@@ -26,7 +26,7 @@ const tokenCache: TokenCache = {
     try {
       await SecureStore.setItemAsync(key, value);
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[clerk] SecureStore.setItemAsync failed', err);
     }
   },
@@ -38,7 +38,7 @@ function readPublishableKey(): string {
   const fromExtra = extra.CLERK_PUBLISHABLE_KEY as string | undefined;
   const key = fromEnv ?? fromExtra ?? '';
   if (!key) {
-    // eslint-disable-next-line no-console
+     
     console.warn(
       '[clerk] EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY is not set. Auth flows will be unavailable.',
     );

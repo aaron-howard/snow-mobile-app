@@ -1,6 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import ReviewScreen from '../../../app/exam/[examId]/review';
+import type { QuestionRecord } from '@domain/practice';
+
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ examId: 'exam-1' }),
 }));
@@ -9,9 +12,6 @@ const mockUseReviewQueue = jest.fn();
 jest.mock('@domain/practice/useReviewQueue', () => ({
   useReviewQueue: (...args: unknown[]) => mockUseReviewQueue(...args),
 }));
-
-import ReviewScreen from '../../../app/exam/[examId]/review';
-import type { QuestionRecord } from '@domain/practice';
 
 function makeQuestion(id: string, text: string): QuestionRecord {
   return {

@@ -31,7 +31,7 @@ const adapter = new SQLiteAdapter({
   jsi: true,
   onSetUpError: (error) => {
     // Surface DB setup errors loudly; the app cannot function without storage.
-    // eslint-disable-next-line no-console
+     
     console.error('[db] failed to set up SQLite adapter', error);
   },
 });

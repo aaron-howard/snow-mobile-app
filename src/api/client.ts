@@ -32,7 +32,7 @@ function resolveBaseUrl(override?: string): string {
   const fromExtra = extra.API_BASE_URL as string | undefined;
   const url = fromEnv ?? fromExtra ?? '';
   if (!url) {
-    // eslint-disable-next-line no-console
+     
     console.warn(
       '[api] EXPO_PUBLIC_API_BASE_URL not configured. Sync requests will fail until the ' +
         'Cloudflare Worker base URL is provided.',

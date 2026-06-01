@@ -5,6 +5,8 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+import CatalogScreen from '../../../app/(tabs)/catalog';
+
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: () => ({}),
   ClerkProvider: ({ children }: { children: React.ReactNode }) => children,
@@ -15,8 +17,6 @@ const mockUseCatalog = jest.fn();
 jest.mock('@/domain/catalog/useCatalog', () => ({
   useCatalog: () => mockUseCatalog(),
 }));
-
-import CatalogScreen from '../../../app/(tabs)/catalog';
 
 const baseExam = {
   id: 'exam-1',

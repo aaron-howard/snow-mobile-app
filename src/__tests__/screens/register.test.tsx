@@ -4,6 +4,8 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+import RegisterScreen from '../../../app/(auth)/register';
+
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: () => ({}),
   useSignIn: () => ({}),
@@ -38,8 +40,6 @@ jest.mock('../../domain/auth', () => ({
   MIN_PASSWORD_LENGTH: 8,
   MAX_PASSWORD_LENGTH: 128,
 }));
-
-import RegisterScreen from '../../../app/(auth)/register';
 
 describe('RegisterScreen', () => {
   beforeEach(() => {

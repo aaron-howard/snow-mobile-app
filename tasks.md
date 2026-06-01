@@ -193,8 +193,11 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 4.1–4.10_
 
 
-- [~] 7. Checkpoint — Core study features
+- [x] 7. Checkpoint — Core study features
   - Ensure all tests pass, ask the user if questions arise.
+  - **All gates green:** `pnpm test` 146/146 (27 suites), `pnpm typecheck` clean, `pnpm lint` clean.
+  - **Fixed repo-wide lint:** ESLint v9 required flat config but the project still had a legacy `.eslintrc.js` (lint had been failing to run since project setup). Migrated to [eslint.config.js](eslint.config.js) — bridges the still-legacy `expo` + `prettier` shareable configs via `@eslint/eslintrc` `FlatCompat` and preserves the original rules (`no-unused-vars` w/ `^_`, `no-explicit-any` warn, `consistent-type-imports`, `no-console`). Removed `.eslintrc.js`.
+  - **Lint findings fixed:** duplicate barrel exports in [src/db/repositories/index.ts](src/db/repositories/index.ts) (explicit `export type {…}` block was redundant with `export * from './types'`); a `consistent-type-imports` split in the content-update test; autofixed `array-type` + stale `eslint-disable` directives; added a display name to the Reanimated test mock.
 
 - [ ] 8. Exam simulator
   - [~] 8.1 Implement `buildConfirmationSummary(session: SimulatorSessionRecord)` pure function
