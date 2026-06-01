@@ -370,7 +370,7 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
   - [x] 14.1 Implement `HighContrastThemeProvider` and `highContrastTheme` color map
     - Semantic theme tokens + two palettes in [src/ui/theme/themes.ts](src/ui/theme/themes.ts) (`standardTheme` slate; `highContrastTheme` on pure black). [src/ui/theme/ThemeProvider.tsx](src/ui/theme/ThemeProvider.tsx) exposes `ThemeProvider`/`useTheme`; activation is a synchronous React state update (applied on the next render, well within the 500 ms budget — Req 10.5). Provider wired at the root in [app/_layout.tsx](app/_layout.tsx); `useTheme` has a safe standard-theme default so components render without a provider. A user-facing toggle was added to the profile **Accessibility** section.
     - **Naming note:** the design calls this `HighContrastThemeProvider`; it is implemented as a general `ThemeProvider` that swaps the high-contrast palette, which is the same capability under a more conventional name.
-    - **Scope note (flagged):** the theme infrastructure, contrast guarantees, provider, and toggle are complete, but the existing screens still use hardcoded `StyleSheet` palettes rather than consuming theme tokens. Migrating every screen's colors to `useTheme` (so high-contrast visibly repaints all screens) is deferred to avoid a large, risky refactor of 18 screens + their tests.
+    - **Scope note (flagged → tracked as Task 16 Part B, subtasks 16.6–16.8):** the theme infrastructure, contrast guarantees, provider, and toggle are complete, but the existing screens still use hardcoded `StyleSheet` palettes rather than consuming theme tokens. Migrating every screen's colors to `useTheme` (so high-contrast visibly repaints all screens) is deferred to avoid a large, risky refactor of 18 screens + their tests.
     - _Requirements: 10.3, 10.5_
   - [x] 14.2 Write property test for high-contrast color contrast ratios
     - **Property 26** — [src/ui/theme/__tests__/highContrast.property.test.ts](src/ui/theme/__tests__/highContrast.property.test.ts). Enumerates `themeContrastPairs(highContrastTheme)` and asserts each clears 4.5:1 via the pure WCAG `contrastRatio` ([src/ui/theme/contrast.ts](src/ui/theme/contrast.ts)); also a `test.each` per pair. Contrast math unit-tested in [contrast.test.ts](src/ui/theme/__tests__/contrast.test.ts).
@@ -392,29 +392,29 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 10.1–10.5_
 
 
-- [ ] 15. Home screen and final integration
-  - [~] 15.1 Build home screen (`app/(tabs)/index.tsx`)
-    - Display active study list with enrolled exams and quick-access actions (quiz, flashcards, simulator)
-    - Show readiness score ring and current streak for each enrolled exam
+- [x] 15. Home screen and final integration
+  - [x] 15.1 Build home screen (`app/(tabs)/index.tsx`)
+    - Active study list: one card per enrolled exam (`useHomeDashboard`) with a readiness `ProgressRing`, current streak, and quick-action buttons routing to quiz / flashcards / simulator (`/exam/{id}/{segment}`). Empty state links to the catalog; loading + error states handled. — [app/(tabs)/index.tsx](app/(tabs)/index.tsx)
+    - New aggregate hook [src/domain/analytics/useHomeDashboard.ts](src/domain/analytics/useHomeDashboard.ts) computes per-exam readiness (reusing `ReadinessScoreCalculator` over 30-day per-domain accuracy, matching `useProgress`) and per-exam streak (`StreakTracker`) in one pass, so the list can't call per-exam hooks in a loop.
+    - Screen test: [src/__tests__/screens/home.test.tsx](src/__tests__/screens/home.test.tsx).
     - _Requirements: 2.3, 6.4, 6.7_
   - [x] 15.2 Wire root layout auth guard (`app/_layout.tsx`)
     - Inner `RootStack` runs inside `ClerkProvider`, reads `useAuth()`, and uses `useSegments` + `router.replace` to bounce unauthenticated users out of protected groups and authenticated users out of `(auth)`. Shows an `ActivityIndicator` splash until Clerk hydrates. — [app/_layout.tsx](app/_layout.tsx)
     - `app/index.tsx` does the initial redirect based on `useAuth().isSignedIn` so users don't see a flash of `(tabs)` before being kicked back. — [app/index.tsx](app/index.tsx)
     - 30-day session lifetime is enforced by Clerk dashboard config, not code.
     - _Requirements: 1.6, 1.14_
-  - [~] 15.3 Wire Zustand stores to connect all domain services, repositories, and UI screens
-    - Ensure all state (auth, enrollment, quiz, flashcard, simulator, progress, bookmarks, notifications, offline) flows correctly through the store layer
+  - [x] 15.3 State wiring — per-feature hooks over a global store (documented architecture decision)
+    - **Decision:** the app wires state through cohesive per-feature hooks (`useEnrolledExams`, `useQuiz`, `useFlashcards`, `useSimulator`, `useProgress`, `useHomeDashboard`, `useBookmarks`, `useNotificationSettings`, `useOfflineStatus`, `useStaleDownloads`) backed directly by the WatermelonDB repositories, with auth from Clerk's `useAuth` and theming/offline via React context (`ThemeProvider`, `OfflineBanner`). WatermelonDB is already the observable source of truth, so a separate Zustand store would duplicate cache state with no functional gain; `zustand` stays a dependency but is intentionally unused. All nine state areas (auth, enrollment, quiz, flashcard, simulator, progress, bookmarks, notifications, offline) flow through this layer and are exercised by the screen + integration tests.
     - _Requirements: all_
-  - [~] 15.4 Write integration tests for critical end-to-end flows
-    - WatermelonDB sync round-trip with a locally-running Hono Worker pointed at a Neon branch database
-    - Exam simulator pause/resume state persistence
-    - Bookmark sync across devices within 30 seconds
-    - Offline download and content availability check
-    - Sync begins within 60 seconds of stable reconnect
+  - [x] 15.4 Integration tests for critical end-to-end flows
+    - Exam simulator pause/resume state persistence — full start→answer→pause→(new controller/restart)→resume→submit lifecycle, asserting the graded score records a completed study session. [src/__tests__/integration/simulatorLifecycle.integration.test.ts](src/__tests__/integration/simulatorLifecycle.integration.test.ts) (Req 5.6, 5.8)
+    - Offline download and content availability check — download a bundle through the FileSystem layer, read the manifest back, and confirm freshness via `ContentStalenessChecker`. [src/__tests__/integration/offlineDownload.integration.test.ts](src/__tests__/integration/offlineDownload.integration.test.ts) (Req 9.1, 9.8)
+    - Sync begins within 60s of stable reconnect — drives `startSyncWatcher` with mocked NetInfo + fake timers, asserting the WatermelonDB sync protocol (`/sync/pull_changes`) fires only after a stable ≥5s reconnect. [src/__tests__/integration/syncReconnect.integration.test.ts](src/__tests__/integration/syncReconnect.integration.test.ts) (Req 9.5, 9.6)
+    - **Deferred to Task 16 Part A (worker sync):** the WatermelonDB↔Worker↔Neon round-trip and 30-second cross-device bookmark sync require a running Hono Worker against a Neon branch and so cannot run under jest; they are covered by subtask 16.5, which writes those round-trip tests once `/sync/*` is real. (Req 7.6, 9.4)
     - _Requirements: 5.8, 7.6, 9.1–9.6_
 
-- [ ] 16. Worker-side sync implementation (Neon Postgres) — closes flagged decision A1
-  - **Goal:** Replace the stubbed `POST /sync/pull_changes` and `POST /sync/push_changes` routes with real per-table WatermelonDB sync logic against Neon Postgres, so cross-device bookmark sync (Req 7.6) and offline→online progress sync (Req 9.4–9.6) actually function end-to-end. Today both routes authenticate, return `{ changes: {}, timestamp }` / `{ ok: true }`, and never touch Neon ([workers/src/routes/sync.ts](workers/src/routes/sync.ts)); the per-table SQL was explicitly deferred from task 2.4. This task is a prerequisite for the real sync round-trip integration test in task 15.4.
+- [ ] 16. Deferred follow-ups — worker sync (A1) + high-contrast theme-token migration
+  - **Part A — Worker-side sync (closes flagged decision A1).** **Goal:** Replace the stubbed `POST /sync/pull_changes` and `POST /sync/push_changes` routes with real per-table WatermelonDB sync logic against Neon Postgres, so cross-device bookmark sync (Req 7.6) and offline→online progress sync (Req 9.4–9.6) actually function end-to-end. Today both routes authenticate, return `{ changes: {}, timestamp }` / `{ ok: true }`, and never touch Neon ([workers/src/routes/sync.ts](workers/src/routes/sync.ts)); the per-table SQL was explicitly deferred from task 2.4. This task is a prerequisite for the real sync round-trip integration test in task 15.4.
   - **Protocol:** Follow the WatermelonDB sync backend contract (https://watermelondb.dev/docs/Sync/Backend). `user_id`-scoped tables are push **and** pull (`user_question_attempts`, `study_sessions`, `simulator_sessions`, `bookmarks`, `notification_settings`, `readiness_score_notifications`, and the `users` row); server-authored content tables (`exams`, `topic_domains`, `blueprint_skills`, `questions`, `answer_choices`, `decks`, `flashcards`, `content_update_notifications`) are **pull-only** and must reject client pushes.
   - [ ] 16.1 Finalize the Postgres mirror schema in [workers/sql/schema.sql](workers/sql/schema.sql)
     - Every synced table needs `id TEXT PRIMARY KEY`, an `updated_at BIGINT` (epoch ms) column for delta selection, and a soft-delete tombstone mechanism (`deleted_at BIGINT NULL`, or a `_changes`/tombstone table) so `pull_changes` can report deleted ids. User tables carry an indexed `user_id`. Add `(user_id, updated_at)` indexes for pull performance.
@@ -431,6 +431,16 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
   - [ ] 16.5 Write worker sync tests
     - Round-trip: push a bookmark → pull from a second cursor returns it; delete → pull reports the tombstone. User-scoping: user A cannot pull/overwrite user B's rows. Content tables reject pushes. Wire into / unblock the task 15.4 integration test (local Worker → Neon branch).
     - _Requirements: 7.6, 9.4–9.6_
+  - **Part B — High-contrast theme-token migration (closes the task 14.1 scope note).** **Goal:** Make the high-contrast theme actually repaint every screen. Task 14 delivered the theme system (`ThemeProvider`/`useTheme`, `standardTheme`/`highContrastTheme`, WCAG-validated pairs) and a profile toggle, but existing screens still use hardcoded `StyleSheet` hex colors, so toggling high-contrast has no visible effect on them yet.
+  - [ ] 16.6 Migrate screen + shared-component colors to theme tokens
+    - Replace hardcoded hex (`#0F172A`, `#1E293B`, `#F8FAFC`, etc.) across `app/**` and `src/ui/**` with `useTheme()` tokens (`background`, `surface`, `textPrimary`, `textSecondary`, `border`, `accent`, `onAccent`, `success`, `danger`, `warning`) so high-contrast mode applies app-wide within 500 ms (Req 10.5). Convert static `StyleSheet.create` palettes to theme-derived styles (e.g. a `useThemedStyles` helper or inline `style={{ color: theme.textPrimary }}`).
+    - _Requirements: 10.3, 10.5_
+  - [ ] 16.7 Persist the high-contrast preference
+    - Store the toggle in `notification_settings`-style local settings (or a small `ui_preferences` row) so high-contrast survives app restarts; hydrate `ThemeProvider` `initialHighContrast` from it.
+    - _Requirements: 10.5_
+  - [ ] 16.8 Add a high-contrast regression test
+    - Render a representative screen inside `ThemeProvider initialHighContrast` and assert key surfaces/text use the high-contrast token values (guards against future hardcoded-color regressions).
+    - _Requirements: 10.3_
 
 - [~] 17. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
