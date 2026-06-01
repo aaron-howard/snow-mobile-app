@@ -14,6 +14,7 @@ Cross-platform mobile study app (iOS + Android) for ServiceNow certification exa
 - [SECURITY.md](SECURITY.md) — how to report vulnerabilities (private GitHub reporting and email).
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, checks before a PR, and **copy-paste text for the GitHub repo Description and topics**.
 - [CHANGELOG.md](CHANGELOG.md) — release notes; pair with [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) when you tag versions.
+- [docs/security-review-tasks.md](docs/security-review-tasks.md) — security review checklist and SR-xx tracking (supply chain, Worker hardening, open risks).
 - [.github/DISCUSSIONS.md](.github/DISCUSSIONS.md) — copy-paste **welcome post body** and category blurbs when you enable GitHub Discussions.
 - **Issues:** [Bug report](.github/ISSUE_TEMPLATE/bug_report.yml) and [Feature request](.github/ISSUE_TEMPLATE/feature_request.yml) templates (YAML forms; shown on **New issue**).
 
@@ -92,5 +93,9 @@ workers/              Hono on Cloudflare Workers — the server-side API and Neo
 - **Clerk** — authentication: email/password, social login, session management.
 
 WatermelonDB syncs with Neon via the Worker; each Worker request carries the user's Clerk session JWT, which the Worker verifies before scoping queries by `user_id`.
+
+**API endpoint trust:** `EXPO_PUBLIC_API_BASE_URL` is embedded at build time. For production, set it only through your trusted CI/EAS secrets so the app cannot be trivially repointed to a hostile origin. The client uses standard TLS (no certificate pinning); risk and optional mitigations are tracked in [docs/security-review-tasks.md](docs/security-review-tasks.md) (SR-06).
+
+**Data at rest on device:** Clerk session material uses the OS keystore via `expo-secure-store`. Local WatermelonDB SQLite and offline exam JSON files are **not** app-level encrypted; treat device loss and backups as an organizational risk decision (see SR-05 in the security review doc).
 
 In **development**, after you sign in, the app seeds two sample exams (CSA + CAD) into an empty local database so the catalog tab has content to browse. Clear app data or uninstall to re-seed.

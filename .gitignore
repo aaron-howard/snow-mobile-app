@@ -34,6 +34,8 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+# Cloudflare Worker local secrets (wrangler dev)
+.dev.vars
 
 # Build artifacts
 *.log

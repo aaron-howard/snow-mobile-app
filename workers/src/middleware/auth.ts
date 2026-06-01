@@ -41,8 +41,12 @@ export const clerkAuth: MiddlewareHandler<{
     c.set('sessionId', typeof sessionId === 'string' ? sessionId : '');
     await next();
   } catch (err) {
-    // Don't leak verification details; just return 401.
-    console.warn('[auth] token verification failed', err);
+    // Don't leak verification details to clients or verbose logs.
+    const safe =
+      err instanceof Error
+        ? { name: err.name, message: err.message }
+        : { name: 'non-Error', message: String(err) };
+    console.warn('[auth] token verification failed', safe);
     return c.json({ error: 'invalid token' }, 401);
   }
 };
