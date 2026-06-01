@@ -155,48 +155,41 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 3.1–3.11_
 
 
-- [ ] 6. Flashcards and spaced repetition
-  - [~] 6.1 Implement `validateFlashcard(term: string, definition: string): boolean` pure function
-    - Reject if either field is empty or whitespace-only
+- [x] 6. Flashcards and spaced repetition
+  - **Domain layer in [src/domain/flashcards/](src/domain/flashcards/)** (barrel: [index.ts](src/domain/flashcards/index.ts), types: [types.ts](src/domain/flashcards/types.ts)). As with `practice`, the barrel exports only pure logic + types — not the `useFlashcards` hook — so importing it never drags WatermelonDB into a render test. Jest now mocks Reanimated + gesture-handler in [jest.setup.ts](jest.setup.ts) (self-contained Reanimated mock with a stable `useSharedValue` ref). Full suite after this task: **146/146 passing**, `tsc --noEmit` clean.
+  - [x] 6.1 Implement `validateFlashcard(term, definition): boolean` — [src/domain/flashcards/validateFlashcard.ts](src/domain/flashcards/validateFlashcard.ts)
+    - Both fields must contain a non-whitespace character.
     - _Requirements: 4.10_
-  - [~] 6.2 Write property test for custom flashcard empty field rejection
-    - **Property 9: Custom flashcard validation rejects empty or whitespace-only fields**
-    - Use `fc.string()` including `fc.stringOf(fc.char(' '))` whitespace-only; verify rejection
+  - [x] 6.2 Write property test for custom flashcard empty field rejection — [validateFlashcard.property.test.ts](src/domain/flashcards/__tests__/validateFlashcard.property.test.ts)
+    - **Property 9** — 300-iteration test (incl. whitespace-only generator) asserting validity equals `term.trim() && definition.trim()`; explicit empty/whitespace cases.
     - Tag: `// Feature: servicenow-cert-study-app, Property 9`
     - **Validates: Requirements 4.10**
-  - [~] 6.3 Implement `SpacedRepetitionEngine`: `computeNextInterval` and `getDueCards`
-    - SM-2 algorithm: ease factor never falls below 1.3; "Still Learning" interval ≤ 50% of "Known" interval
+  - [x] 6.3 Implement `SpacedRepetitionEngine`: `computeNextInterval` + `getDueCards` — [src/domain/flashcards/SpacedRepetitionEngine.ts](src/domain/flashcards/SpacedRepetitionEngine.ts)
+    - SM-2 ease update clamped at 1.3 every call. **Known interval is computed from the card's current ease factor (identical for all passing qualities 3–5); Still Learning interval = `floor(knownInterval / 2)`** — this is the design choice that makes the ≤50% ratio hold for *every* card, including fresh ones (Known base kept ≥ 2 days so the half is ≥ 1). Epoch-ms timestamps to match `FlashcardDTO`.
     - _Requirements: 4.8_
-  - [~] 6.4 Write property test for SRS interval ratio invariant
-    - **Property 10: Spaced repetition interval ratio (Still Learning ≤ 50% of Known)**
-    - Use `fc.record` of `FlashcardSRSState` + `fc.constantFrom(0,1,2)` vs `fc.constantFrom(3,4,5)`; verify ratio
+  - [x] 6.4 Write property test for SRS interval ratio invariant — [srsIntervalRatio.property.test.ts](src/domain/flashcards/__tests__/srsIntervalRatio.property.test.ts)
+    - **Property 10** — 300 iters, `still∈{0,1,2}` vs `known∈{3,4,5}` on the same card; asserts `still.intervalDays ≤ 0.5 * known.intervalDays`.
     - Tag: `// Feature: servicenow-cert-study-app, Property 10`
     - **Validates: Requirements 4.8**
-  - [~] 6.5 Write property test for SM-2 ease factor floor
-    - **Property 11: SM-2 ease factor never falls below 1.3**
-    - Use `fc.record` of `FlashcardSRSState` + `fc.integer({min:0,max:5})`, applied N times via `fc.array`; verify ease factor ≥ 1.3 after every repetition
+  - [x] 6.5 Write property test for SM-2 ease factor floor — [srsEaseFactor.property.test.ts](src/domain/flashcards/__tests__/srsEaseFactor.property.test.ts)
+    - **Property 11** — 300 iters applying a random 1–40 length quality sequence; asserts ease ≥ 1.3 after every repetition.
     - Tag: `// Feature: servicenow-cert-study-app, Property 11`
     - **Validates: Requirements 4.8**
-  - [~] 6.6 Implement `FlashcardSessionManager.swipeLeft` and `swipeRight` logic
-    - `swipeRight`: mark "Known", remove from active pool (Requirement 4.5)
-    - `swipeLeft`: mark "Still Learning", re-insert at position ≥ currentIndex + 3 (Requirement 4.6)
+  - [x] 6.6 Implement `FlashcardSessionManager.swipeLeft`/`swipeRight` — [src/domain/flashcards/FlashcardSessionManager.ts](src/domain/flashcards/FlashcardSessionManager.ts)
+    - Pure pool reordering. `swipeRight` removes the card (Req 4.5); `swipeLeft` re-inserts at `min(currentIndex + 3, rest.length)` (Req 4.6).
     - _Requirements: 4.5, 4.6_
-  - [~] 6.7 Write property test for swipe-left re-insertion position
-    - **Property 12: Swipe-left re-inserts card at least 3 positions ahead**
-    - Use `fc.array` of cards with minLength 4; verify re-insertion index ≥ currentIndex + 3
+  - [x] 6.7 Write property test for swipe-left re-insertion position — [swipeLeft.property.test.ts](src/domain/flashcards/__tests__/swipeLeft.property.test.ts)
+    - **Property 12** — 300 iters with ≥4 unique cards and in-range `currentIndex`; asserts the re-inserted card lands at index ≥ `currentIndex + 3` with no loss/dup; plus clamp + swipeRight cases.
     - Tag: `// Feature: servicenow-cert-study-app, Property 12`
     - **Validates: Requirements 4.6**
-  - [~] 6.8 Build `FlashcardDeck` shared component using React Native Reanimated 3
-    - Swipeable card stack; flip animation completing within 300 ms (Requirement 4.4)
-    - Show term side by default; flip to definition on tap (Requirement 4.2)
-    - Display empty-deck message with option to create flashcard when deck has no cards (Requirement 4.3)
+  - [x] 6.8 Build `FlashcardDeck` shared component (Reanimated 3) — [src/ui/FlashcardDeck.tsx](src/ui/FlashcardDeck.tsx)
+    - Reanimated flip (`FLIP_DURATION_MS = 300`, Req 4.4), term shown by default → definition on tap (Req 4.2), gesture-handler Pan for left/right swipe **plus accessible "Known"/"Still learning" buttons** (Req 10.1, and the path tests exercise), empty-deck message + "Create a flashcard" (Req 4.3).
     - _Requirements: 4.2–4.6_
-  - [~] 6.9 Build flashcard screen (`app/exam/[examId]/flashcards.tsx`)
-    - Display session summary (Known / Still Learning counts) on completion (Requirement 4.7)
-    - Support custom flashcard creation with `validateFlashcard`; save to user-defined deck (Requirements 4.9, 4.10)
+  - [x] 6.9 Build flashcard screen + `useFlashcards` hook — [app/exam/[examId]/flashcards.tsx](app/exam/[examId]/flashcards.tsx), [useFlashcards.ts](src/domain/flashcards/useFlashcards.ts)
+    - Deck picker, live Known/Still/remaining counts, end-of-session summary (Req 4.7). Swipes persist SM-2 state via `upsertSRSState` (Known→q5, Still→q1). Custom-card modal validates with `validateFlashcard`, auto-creates a "My cards" custom deck if none exists, then saves (Req 4.9, 4.10).
     - _Requirements: 4.1–4.10_
-  - [~] 6.10 Write unit tests for SpacedRepetitionEngine, FlashcardSessionManager, and FlashcardDeck component
-    - Test flip animation timing, empty deck state, custom flashcard validation errors, session summary
+  - [x] 6.10 Write unit tests — [SpacedRepetitionEngine.test.ts](src/domain/flashcards/__tests__/SpacedRepetitionEngine.test.ts), [FlashcardDeck.test.tsx](src/ui/__tests__/FlashcardDeck.test.tsx), [flashcards.test.tsx](src/__tests__/screens/flashcards.test.tsx)
+    - Engine interval/ease/due cases; flip timing, empty-deck state, flip-to-definition, Known/Still buttons; screen summary, add-card flow, validation error surfacing.
     - _Requirements: 4.1–4.10_
 
 
