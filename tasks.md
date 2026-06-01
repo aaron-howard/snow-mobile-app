@@ -335,37 +335,34 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 8.1–8.6_
 
 
-- [ ] 13. Offline access and sync
-  - [~] 13.1 Implement `ContentStalenessChecker.isStale(downloadedAt: Date, today: Date): boolean` pure function
-    - Return true iff (today − downloadedAt) > 30 days
+- [x] 13. Offline access and sync
+  - [x] 13.1 Implement `ContentStalenessChecker.isStale(downloadedAt: Date, today: Date): boolean` pure function
+    - [src/domain/offline/ContentStalenessChecker.ts](src/domain/offline/ContentStalenessChecker.ts). Returns true iff elapsed time is strictly `> 30 days` (`CONTENT_STALE_AFTER_MS`); exactly 30 days is **not** stale.
     - _Requirements: 9.8_
-  - [~] 13.2 Write property test for stale content detection
-    - **Property 24: Stale content warning fires for content older than 30 days**
-    - Use `fc.date()` for downloadedAt; verify isStale iff (today − downloadedAt) > 30 days; content ≤ 30 days old must not trigger warning
+  - [x] 13.2 Write property test for stale content detection
+    - **Property 24** — [src/domain/offline/__tests__/staleContent.property.test.ts](src/domain/offline/__tests__/staleContent.property.test.ts). Generates a download epoch + a ±60-day delta and asserts `isStale === (delta > 30 days)` over 300 runs (covers fresh, exactly-30-day, and future-dated cases).
     - Tag: `// Feature: servicenow-cert-study-app, Property 24`
     - **Validates: Requirements 9.8**
-  - [~] 13.3 Implement `OfflineSyncQueue`: `enqueue`, `flush`, `getPendingCount`, `retryOnReconnect`
-    - Queue all progress updates locally while offline; begin sync within 60 seconds of stable reconnect (≥5 consecutive seconds); retry on interruption (Requirements 9.4–9.6)
+  - [x] 13.3 Implement `OfflineSyncQueue`: `enqueue`, `flush`, `getPendingCount`, `retryOnReconnect`
+    - [src/domain/offline/OfflineSyncQueue.ts](src/domain/offline/OfflineSyncQueue.ts). `enqueue` dedupes by `id`; `flush` attempts every pending update via an injected `deliver` fn, removing successes and retaining failures; concurrent flushes are coalesced; `retryOnReconnect` is a fire-and-forget flush.
+    - **Design note:** durable cross-restart persistence of local writes is already provided by WatermelonDB; this queue is the in-memory retry/timing coordinator on top of it. The live "stable ≥5s → sync within 60s" reconnect behavior (Req 9.5/9.6) is implemented by `startSyncWatcher` in [src/db/sync.ts](src/db/sync.ts), now wired into the root layout (13.7).
     - _Requirements: 9.4–9.6_
-  - [~] 13.4 Write property test for offline queue retry behavior
-    - **Property 23: Offline progress updates are fully queued and retried until synchronized**
-    - Use `fc.array` of progress updates; simulate interruption; verify queue retried on reconnect and all updates eventually synchronized
+  - [x] 13.4 Write property test for offline queue retry behavior
+    - **Property 23** — [src/domain/offline/__tests__/offlineQueue.property.test.ts](src/domain/offline/__tests__/offlineQueue.property.test.ts). Enqueues a unique set of updates, fails the first N delivery attempts (simulated interruption), flushes repeatedly, and asserts the queue drains to 0, every update is delivered, and none is delivered twice. 200 runs.
     - Tag: `// Feature: servicenow-cert-study-app, Property 23`
     - **Validates: Requirements 9.4, 9.5, 9.6**
-  - [~] 13.5 Implement exam content download using Expo FileSystem
-    - Store all questions, flashcards, and decks for an exam on device (Requirement 9.1)
-    - Check available storage before download; display required vs. available space and halt without partial content on insufficient storage (Requirement 9.2)
+  - [x] 13.5 Implement exam content download using Expo FileSystem
+    - [src/offline/examContentDownload.ts](src/offline/examContentDownload.ts): pure `evaluateStorage` (sufficient iff `available ≥ required`) and `utf8ByteLength`, plus a `downloadExamContent(examId, deps)` orchestrator that assembles all questions/answers/decks/flashcards (Req 9.1), estimates bytes, checks `getFreeDiskStorageAsync` first, and throws `InsufficientStorageError` **without writing** on shortfall (Req 9.2). A manifest records `downloadedAt` for staleness. The repository load is dynamically imported so the module is unit-testable without the native SQLite adapter.
     - _Requirements: 9.1, 9.2_
-  - [~] 13.6 Build `OfflineBanner` and `ContentStaleWarning` shared components
-    - `OfflineBanner`: persistent header label when `NetInfo.isConnected === false` (Requirement 9.7)
-    - `ContentStaleWarning`: banner when downloaded content is > 30 days old (Requirement 9.8)
-    - Both include `accessibilityLabel` and `accessibilityLiveRegion` (Requirement 10.1)
+  - [x] 13.6 Build `OfflineBanner` and `ContentStaleWarning` shared components
+    - [src/ui/OfflineBanner.tsx](src/ui/OfflineBanner.tsx) and [src/ui/ContentStaleWarning.tsx](src/ui/ContentStaleWarning.tsx). Both are presentational (`visible` prop), pair an icon with text (no color-only meaning), and set `accessibilityRole`, `accessibilityLabel`, and `accessibilityLiveRegion="polite"` (Req 10.1). `ContentStaleWarning` renders a tappable refresh prompt when `onRefresh` is provided.
     - _Requirements: 9.7, 9.8, 10.1_
-  - [~] 13.7 Wire offline detection and sync into the root layout
-    - Monitor `NetInfo`; show `OfflineBanner`; trigger `OfflineSyncQueue.retryOnReconnect` on reconnect; show `ContentStaleWarning` for stale downloads
+  - [x] 13.7 Wire offline detection and sync into the root layout
+    - [app/_layout.tsx](app/_layout.tsx): `useOfflineStatus` (NetInfo, treats "connected but unreachable" as offline) drives `OfflineBanner`; `useStaleDownloads` checks enrolled exams' manifests via `ContentStalenessChecker` and drives `ContentStaleWarning`. A guarded effect starts `startSyncWatcher` on authenticated launch so reconnect sync (and thus queued-update retry, Req 9.5/9.6) runs. The connectivity/sync imports are lazy and `NODE_ENV==='test'`-guarded so native modules never load under jest.
     - _Requirements: 9.3–9.8_
-  - [~] 13.8 Write unit tests for ContentStalenessChecker, OfflineSyncQueue, and offline UI components
-    - Test insufficient storage error, offline banner visibility, stale content warning, sync retry on reconnect
+  - [x] 13.8 Write unit tests for ContentStalenessChecker, OfflineSyncQueue, and offline UI components
+    - [ContentStalenessChecker.test.ts](src/domain/offline/__tests__/ContentStalenessChecker.test.ts) (boundary cases), [OfflineSyncQueue.test.ts](src/domain/offline/__tests__/OfflineSyncQueue.test.ts) (dedupe, partial-failure counts, retry drain, `retryOnReconnect`), [examContentDownload.test.ts](src/offline/__tests__/examContentDownload.test.ts) (storage evaluation, UTF-8 sizing, sufficient write + insufficient halt), and component tests [OfflineBanner.test.tsx](src/ui/__tests__/OfflineBanner.test.tsx) / [ContentStaleWarning.test.tsx](src/ui/__tests__/ContentStaleWarning.test.tsx) (visibility + accessibility + refresh tap).
+    - **All gates green:** `pnpm test` 276/276 (59 suites), `pnpm typecheck` clean, `pnpm lint` clean. (Pre-existing cosmetic `act()` console line in `login.test.tsx` remains.)
     - _Requirements: 9.1–9.8_
 
 

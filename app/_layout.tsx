@@ -6,6 +6,10 @@ import Constants from 'expo-constants';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useUserSync } from '../src/domain/auth';
+import { useOfflineStatus } from '../src/domain/offline/useOfflineStatus';
+import { useStaleDownloads } from '../src/domain/offline/useStaleDownloads';
+import { OfflineBanner } from '../src/ui/OfflineBanner';
+import { ContentStaleWarning } from '../src/ui/ContentStaleWarning';
 
 /**
  * SecureStore-backed token cache for Clerk. Keys are short and
@@ -57,9 +61,12 @@ function readPublishableKey(): string {
  *    user via `useUserSync`.
  */
 function RootStack() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, getToken } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  const isOffline = useOfflineStatus();
+  const hasStaleDownloads = useStaleDownloads();
 
   useUserSync();
 
@@ -84,6 +91,19 @@ function RootStack() {
     return () => subscription?.remove();
   }, [isSignedIn, router]);
 
+  // Connectivity-driven sync: begins within 60s of a stable (≥5s) reconnect and
+  // retries queued updates until synchronized (Req 9.4–9.6). Lazy import keeps
+  // NetInfo/timers out of the jest environment.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'test') return;
+    if (!isSignedIn) return;
+    let handle: { unsubscribe: () => void } | undefined;
+    void import('@/db/sync').then((m) => {
+      handle = m.startSyncWatcher({ getToken: () => getToken() });
+    });
+    return () => handle?.unsubscribe();
+  }, [isSignedIn, getToken]);
+
   useEffect(() => {
     if (!isLoaded) return;
     const firstSegment = segments[0];
@@ -104,7 +124,13 @@ function RootStack() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <View style={styles.root}>
+      <OfflineBanner visible={isOffline} />
+      <ContentStaleWarning visible={hasStaleDownloads} />
+      <Stack screenOptions={{ headerShown: false }} />
+    </View>
+  );
 }
 
 export default function RootLayout() {
@@ -117,6 +143,10 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    backgroundColor: '#0F172A',
+    flex: 1,
+  },
   splash: {
     alignItems: 'center',
     backgroundColor: '#0F172A',
