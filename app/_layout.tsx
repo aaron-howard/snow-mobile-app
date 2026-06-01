@@ -10,6 +10,7 @@ import { useOfflineStatus } from '../src/domain/offline/useOfflineStatus';
 import { useStaleDownloads } from '../src/domain/offline/useStaleDownloads';
 import { OfflineBanner } from '../src/ui/OfflineBanner';
 import { ContentStaleWarning } from '../src/ui/ContentStaleWarning';
+import { ThemeProvider } from '../src/ui/theme';
 
 /**
  * SecureStore-backed token cache for Clerk. Keys are short and
@@ -135,10 +136,12 @@ function RootStack() {
 
 export default function RootLayout() {
   return (
-    <ClerkProvider publishableKey={readPublishableKey()} tokenCache={tokenCache}>
-      <StatusBar style="light" />
-      <RootStack />
-    </ClerkProvider>
+    <ThemeProvider>
+      <ClerkProvider publishableKey={readPublishableKey()} tokenCache={tokenCache}>
+        <StatusBar style="light" />
+        <RootStack />
+      </ClerkProvider>
+    </ThemeProvider>
   );
 }
 

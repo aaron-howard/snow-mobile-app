@@ -1,5 +1,6 @@
 import { useProfile } from '@/domain/analytics/useProfile';
 import { useNotificationSettings } from '@/domain/notifications/useNotificationSettings';
+import { useTheme } from '@ui/theme';
 import {
   ActivityIndicator,
   Pressable,
@@ -186,7 +187,24 @@ export default function ProfileScreen() {
       ) : null}
 
       <NotificationSettingsSection />
+      <AccessibilitySection />
     </ScrollView>
+  );
+}
+
+function AccessibilitySection() {
+  const { highContrast, setHighContrast } = useTheme();
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionHeading} accessibilityRole="header">
+        Accessibility
+      </Text>
+      <ToggleRow
+        label="High-contrast theme"
+        value={highContrast}
+        onValueChange={setHighContrast}
+      />
+    </View>
   );
 }
 
