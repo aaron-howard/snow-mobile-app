@@ -199,39 +199,34 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
   - **Fixed repo-wide lint:** ESLint v9 required flat config but the project still had a legacy `.eslintrc.js` (lint had been failing to run since project setup). Migrated to [eslint.config.js](eslint.config.js) — bridges the still-legacy `expo` + `prettier` shareable configs via `@eslint/eslintrc` `FlatCompat` and preserves the original rules (`no-unused-vars` w/ `^_`, `no-explicit-any` warn, `consistent-type-imports`, `no-console`). Removed `.eslintrc.js`.
   - **Lint findings fixed:** duplicate barrel exports in [src/db/repositories/index.ts](src/db/repositories/index.ts) (explicit `export type {…}` block was redundant with `export * from './types'`); a `consistent-type-imports` split in the content-update test; autofixed `array-type` + stale `eslint-disable` directives; added a display name to the Reanimated test mock.
 
-- [ ] 8. Exam simulator
-  - [~] 8.1 Implement `buildConfirmationSummary(session: SimulatorSessionRecord)` pure function
-    - Return exact count of unanswered questions and flagged questions
+- [x] 8. Exam simulator
+  - **Domain layer in [src/domain/simulator/](src/domain/simulator/)** (barrel: [index.ts](src/domain/simulator/index.ts), types: [types.ts](src/domain/simulator/types.ts)) — exports pure fns + controller + types, never the `useSimulator` hook. Full suite after this task: **167/167 passing**, `tsc --noEmit` + `eslint` clean.
+  - [x] 8.1 Implement `buildConfirmationSummary` pure function — [buildConfirmationSummary.ts](src/domain/simulator/buildConfirmationSummary.ts)
+    - Counts unanswered (no non-empty answer id) + flagged (de-duped, restricted to the session's own questions). Takes a structural `{ questions, answers, flaggedQuestions }` input so it's trivially testable.
     - _Requirements: 5.5_
-  - [~] 8.2 Write property test for simulator confirmation counts
-    - **Property 13: Simulator submission confirmation counts are accurate**
-    - Use `fc.record` of session with random answered/flagged states; verify counts match
+  - [x] 8.2 Write property test for simulator confirmation counts — [buildConfirmationSummary.property.test.ts](src/domain/simulator/__tests__/buildConfirmationSummary.property.test.ts)
+    - **Property 13** — 300 iters over random answered/flagged states; asserts exact unanswered + flagged counts; plus a stale-flag-id case.
     - Tag: `// Feature: servicenow-cert-study-app, Property 13`
     - **Validates: Requirements 5.5**
-  - [~] 8.3 Implement `calculateSimulatorResult(session, questions)` pure function
-    - Compute overall score percentage, pass/fail against official passing threshold, per-domain score breakdown, list of incorrectly answered questions with explanations
+  - [x] 8.3 Implement `calculateSimulatorResult(session, questions)` pure function — [calculateSimulatorResult.ts](src/domain/simulator/calculateSimulatorResult.ts)
+    - Score is over **every presented question** (unanswered = incorrect, exam conditions). One "not correct" predicate drives score, per-domain breakdown, and the incorrect list (which therefore includes unanswered questions for review). Pass = score ≥ `officialPassingScore`.
     - _Requirements: 5.6_
-  - [~] 8.4 Write property test for simulator results calculation
-    - **Property 14: Simulator results calculation is correct**
-    - Use `fc.array` of answer records; verify score, pass/fail, domain breakdown, and incorrect question list are all correct
+  - [x] 8.4 Write property test for simulator results calculation — [calculateSimulatorResult.property.test.ts](src/domain/simulator/__tests__/calculateSimulatorResult.property.test.ts)
+    - **Property 14** — 300 iters with correct/wrong/unanswered records + random threshold; independently verifies score, pass/fail, per-domain breakdown, and the incorrect-id set.
     - Tag: `// Feature: servicenow-cert-study-app, Property 14`
     - **Validates: Requirements 5.6**
-  - [~] 8.5 Implement `ExamSimulatorController`: `startSimulator`, `flagQuestion`, `unflagQuestion`, `submitSimulator`, `pauseSimulator`, `resumeSimulator`
-    - Countdown timer updates every second; auto-submit on expiry (Requirements 5.1, 5.2, 5.4)
-    - Pause timer and persist state on app background; restore on return (Requirement 5.8)
-    - Handle unrestorable state: display error and offer restart or discard (Requirement 5.9)
-    - Store results for minimum 90 days (Requirement 5.7)
+  - [x] 8.5 Implement `ExamSimulatorController` — [ExamSimulatorController.ts](src/domain/simulator/ExamSimulatorController.ts)
+    - `startSimulator` (timer = `officialDurationMinutes`, `expiresAt = startedAt + 90d` for Req 5.7), `answerQuestion`, `flagQuestion`/`unflagQuestion` (Req 5.3), `submitSimulator` (grades + persists submitted row + records a completed `study_sessions` row for analytics), `pauseSimulator` (persists `paused` + remaining time, Req 5.8), `findResumableSession` + `resumeSimulator` (rebuilds the question set from the pool; throws `SimulatorRestoreError` if the exam/pool no longer matches → Req 5.9), `discardSession`.
+    - **Design deviations (noted):** the countdown + auto-submit live in `useSimulator`, not the controller (the controller owns lifecycle/persistence). Because the `simulator_sessions` row persists answers/flags/remaining but **not** the question list, the presented set is the first `officialQuestionCount` of the pool in **repository order (no shuffle by default)** so a paused session is deterministically rebuildable; `resumeSimulator` takes the persisted DTO (via `findResumableSession`) rather than a bare `sessionId`, and an `answerQuestion` method was added (not in the design interface) since answers must be captured.
     - _Requirements: 5.1–5.9_
-  - [~] 8.6 Build `TimerDisplay` shared component
-    - Fixed-position countdown; always visible without scrolling; updates every second
-    - Include `accessibilityLabel` and `accessibilityLiveRegion` for screen readers
+  - [x] 8.6 Build `TimerDisplay` shared component — [src/ui/TimerDisplay.tsx](src/ui/TimerDisplay.tsx)
+    - Fixed top bar (`accessibilityRole="timer"`, `accessibilityLiveRegion`), `formatRemaining` → mm:ss (clamped ≥ 0), final-stretch warning styling. Parent drives the per-second value.
     - _Requirements: 5.2, 10.1_
-  - [~] 8.7 Build simulator screen (`app/exam/[examId]/simulator.tsx`)
-    - Wire `ExamSimulatorController`; show confirmation dialog before manual submission (Requirement 5.5)
-    - Display full results report after submission (Requirement 5.6)
+  - [x] 8.7 Build simulator screen + `useSimulator` hook — [app/exam/[examId]/simulator.tsx](app/exam/[examId]/simulator.tsx), [useSimulator.ts](src/domain/simulator/useSimulator.ts)
+    - Hook phases: `loading → idle/active/restore_error → submitting → result`. Per-second countdown with auto-submit at zero (Req 5.4); `AppState` listener pauses + persists on background and unpauses on foreground (Req 5.8); auto-resume on mount via `findResumableSession`/`resumeSimulator`, falling back to a restart/discard prompt on `SimulatorRestoreError` (Req 5.9). Screen reuses `QuestionCard` with `result={null}` (no in-exam feedback), one-at-a-time nav + per-question flag, pre-submit confirmation modal showing unanswered/flagged counts (Req 5.5), and a full results report — score %, PASS/FAIL vs threshold, per-domain breakdown, incorrect questions w/ explanations (Req 5.6).
     - _Requirements: 5.1–5.9_
-  - [~] 8.8 Write unit tests for ExamSimulatorController and simulator screen
-    - Test auto-submit on timer expiry, pause/resume, unrestorable state error, confirmation dialog counts, results report
+  - [x] 8.8 Write unit tests — [ExamSimulatorController.test.ts](src/domain/simulator/__tests__/ExamSimulatorController.test.ts), [TimerDisplay.test.tsx](src/ui/__tests__/TimerDisplay.test.tsx), [simulator.test.tsx](src/__tests__/screens/simulator.test.tsx)
+    - Controller (in-memory fakes): start/timer/retention, flag/unflag, submit grading + study-session recording, pause persistence, resume rebuild, `SimulatorRestoreError` on content drift, discard. Timer: `formatRemaining` + a11y labels. Screen (mocked hook): idle start, active timer/question/flag, confirmation counts, confirm submit, results report, restore-error restart/discard.
     - _Requirements: 5.1–5.9_
 
 
