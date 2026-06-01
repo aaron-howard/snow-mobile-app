@@ -11,9 +11,12 @@ import {
 import { QuestionCard } from '@ui/QuestionCard';
 import { TimerDisplay } from '@ui/TimerDisplay';
 import { useSimulator } from '@domain/simulator/useSimulator';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 
 export default function SimulatorScreen() {
   const { examId } = useLocalSearchParams<{ examId: string }>();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const {
     phase,
     error,
@@ -47,7 +50,7 @@ export default function SimulatorScreen() {
 
       {phase === 'loading' ? (
         <View style={styles.centered} accessibilityLabel="Loading simulator">
-          <ActivityIndicator size="large" color="#60A5FA" />
+          <ActivityIndicator size="large" color={theme.accent} />
         </View>
       ) : null}
 
@@ -107,7 +110,7 @@ export default function SimulatorScreen() {
 
       {phase === 'submitting' ? (
         <View style={styles.centered} accessibilityLabel="Submitting simulator">
-          <ActivityIndicator size="large" color="#60A5FA" />
+          <ActivityIndicator size="large" color={theme.accent} />
           <Text style={styles.intro}>Scoring your exam…</Text>
         </View>
       ) : null}
@@ -265,203 +268,204 @@ export default function SimulatorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-  },
-  centered: {
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  body: {
-    gap: 12,
-    padding: 16,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  intro: {
-    color: '#CBD5E1',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    color: '#FEE2E2',
-    padding: 12,
-  },
-  pausedBanner: {
-    backgroundColor: '#78350F',
-    borderRadius: 8,
-    color: '#FEF3C7',
-    padding: 10,
-    textAlign: 'center',
-  },
-  progressRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progress: {
-    color: '#E2E8F0',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  flagButton: {
-    borderColor: '#475569',
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  flagButtonActive: {
-    backgroundColor: '#B45309',
-    borderColor: '#F59E0B',
-  },
-  flagLabel: {
-    color: '#F8FAFC',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  navRow: {
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-  },
-  navButton: {
-    alignItems: 'center',
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    flex: 1,
-    paddingVertical: 12,
-  },
-  navDisabled: {
-    opacity: 0.4,
-  },
-  submitButton: {
-    backgroundColor: '#1D4ED8',
-  },
-  navLabel: {
-    color: '#F8FAFC',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  submitLink: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  submitLinkLabel: {
-    color: '#93C5FD',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  primaryLabel: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    alignItems: 'center',
-    borderColor: '#475569',
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  secondaryLabel: {
-    color: '#E2E8F0',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  flex1: {
-    flex: 1,
-  },
-  resultBadge: {
-    alignItems: 'center',
-    borderRadius: 12,
-    paddingVertical: 20,
-  },
-  passBadge: {
-    backgroundColor: '#14532D',
-  },
-  failBadge: {
-    backgroundColor: '#7F1D1D',
-  },
-  resultScore: {
-    color: '#F8FAFC',
-    fontSize: 40,
-    fontWeight: '800',
-  },
-  resultStatus: {
-    color: '#E2E8F0',
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 4,
-  },
-  sectionHeading: {
-    color: '#F8FAFC',
-    fontSize: 17,
-    fontWeight: '700',
-    marginTop: 12,
-  },
-  domainLine: {
-    color: '#CBD5E1',
-    fontSize: 15,
-  },
-  incorrectItem: {
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    gap: 6,
-    padding: 12,
-  },
-  incorrectQuestion: {
-    color: '#F8FAFC',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  incorrectExplanation: {
-    color: '#94A3B8',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  modalBackdrop: {
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    gap: 16,
-    padding: 20,
-  },
-  modalTitle: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  modalBody: {
-    color: '#CBD5E1',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+    },
+    centered: {
+      alignItems: 'center',
+      flex: 1,
+      gap: 12,
+      justifyContent: 'center',
+      padding: 24,
+    },
+    body: {
+      gap: 12,
+      padding: 16,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    intro: {
+      color: theme.textBody,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      color: theme.onDangerSurface,
+      padding: 12,
+    },
+    pausedBanner: {
+      backgroundColor: theme.warningSurface,
+      borderRadius: 8,
+      color: theme.onWarningSurface,
+      padding: 10,
+      textAlign: 'center',
+    },
+    progressRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    progress: {
+      color: theme.textBody,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    flagButton: {
+      borderColor: theme.borderStrong,
+      borderRadius: 16,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    flagButtonActive: {
+      backgroundColor: theme.warningSurface,
+      borderColor: theme.warning,
+    },
+    flagLabel: {
+      color: theme.textPrimary,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    navRow: {
+      flexDirection: 'row',
+      gap: 12,
+      justifyContent: 'space-between',
+    },
+    navButton: {
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      borderRadius: 8,
+      flex: 1,
+      paddingVertical: 12,
+    },
+    navDisabled: {
+      opacity: 0.4,
+    },
+    submitButton: {
+      backgroundColor: theme.accentStrong,
+    },
+    navLabel: {
+      color: theme.textPrimary,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    submitLink: {
+      alignItems: 'center',
+      paddingVertical: 8,
+    },
+    submitLinkLabel: {
+      color: theme.accent,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    primaryButton: {
+      alignItems: 'center',
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    primaryLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    secondaryButton: {
+      alignItems: 'center',
+      borderColor: theme.borderStrong,
+      borderRadius: 8,
+      borderWidth: 1,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    secondaryLabel: {
+      color: theme.textBody,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    row: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    flex1: {
+      flex: 1,
+    },
+    resultBadge: {
+      alignItems: 'center',
+      borderRadius: 12,
+      paddingVertical: 20,
+    },
+    passBadge: {
+      backgroundColor: theme.successSurface,
+    },
+    failBadge: {
+      backgroundColor: theme.dangerSurface,
+    },
+    resultScore: {
+      color: theme.textPrimary,
+      fontSize: 40,
+      fontWeight: '800',
+    },
+    resultStatus: {
+      color: theme.textBody,
+      fontSize: 16,
+      fontWeight: '700',
+      marginTop: 4,
+    },
+    sectionHeading: {
+      color: theme.textPrimary,
+      fontSize: 17,
+      fontWeight: '700',
+      marginTop: 12,
+    },
+    domainLine: {
+      color: theme.textBody,
+      fontSize: 15,
+    },
+    incorrectItem: {
+      backgroundColor: theme.surface,
+      borderRadius: 8,
+      gap: 6,
+      padding: 12,
+    },
+    incorrectQuestion: {
+      color: theme.textPrimary,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    incorrectExplanation: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    modalBackdrop: {
+      backgroundColor: 'rgba(15, 23, 42, 0.7)',
+      flex: 1,
+      justifyContent: 'center',
+      padding: 24,
+    },
+    modalCard: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      gap: 16,
+      padding: 20,
+    },
+    modalTitle: {
+      color: theme.textPrimary,
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    modalBody: {
+      color: theme.textBody,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+  });

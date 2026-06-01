@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 export interface StudyCalendarProps {
   /** Dates on which at least one session was completed. */
   studyDays: readonly Date[];
@@ -23,6 +26,7 @@ function dayKey(year: number, month: number, day: number): string {
  * an accessibility label so the state isn't color-only (Req 10.1).
  */
 export function StudyCalendar({ studyDays, month = new Date() }: StudyCalendarProps) {
+  const styles = useThemedStyles(makeStyles);
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
 
@@ -73,46 +77,47 @@ export function StudyCalendar({ studyDays, month = new Date() }: StudyCalendarPr
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: 8,
-  },
-  title: {
-    color: '#0F172A',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  weekRow: {
-    flexDirection: 'row',
-  },
-  weekday: {
-    color: '#94A3B8',
-    flexBasis: '14.28%',
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  cell: {
-    alignItems: 'center',
-    aspectRatio: 1,
-    flexBasis: '14.28%',
-    justifyContent: 'center',
-    padding: 2,
-  },
-  studied: {
-    backgroundColor: '#DCFCE7',
-    borderRadius: 8,
-  },
-  dayText: {
-    color: '#334155',
-    fontSize: 13,
-  },
-  studiedText: {
-    color: '#166534',
-    fontWeight: '700',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    wrap: {
+      gap: 8,
+    },
+    title: {
+      color: theme.cardText,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    weekRow: {
+      flexDirection: 'row',
+    },
+    weekday: {
+      color: theme.cardMuted,
+      flexBasis: '14.28%',
+      fontSize: 12,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    cell: {
+      alignItems: 'center',
+      aspectRatio: 1,
+      flexBasis: '14.28%',
+      justifyContent: 'center',
+      padding: 2,
+    },
+    studied: {
+      backgroundColor: theme.studiedSurface,
+      borderRadius: 8,
+    },
+    dayText: {
+      color: theme.cardMuted,
+      fontSize: 13,
+    },
+    studiedText: {
+      color: theme.onStudiedSurface,
+      fontWeight: '700',
+    },
+  });

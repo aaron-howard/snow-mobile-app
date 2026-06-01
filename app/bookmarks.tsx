@@ -1,5 +1,6 @@
 import { useBookmarks } from '@/domain/bookmarks/useBookmarks';
 import { BookmarkButton } from '@ui/BookmarkButton';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -10,6 +11,8 @@ function formatDate(ms: number): string {
 export default function BookmarksScreen() {
   const { loading, error, groups, removeBookmark } = useBookmarks();
   const router = useRouter();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -18,7 +21,7 @@ export default function BookmarksScreen() {
       </Text>
 
       {loading ? (
-        <ActivityIndicator color="#60A5FA" accessibilityLabel="Loading your bookmarks" />
+        <ActivityIndicator color={theme.accent} accessibilityLabel="Loading your bookmarks" />
       ) : null}
 
       {error ? (
@@ -88,84 +91,85 @@ export default function BookmarksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-  },
-  content: {
-    gap: 14,
-    padding: 16,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  empty: {
-    color: '#94A3B8',
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 12,
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    color: '#FEE2E2',
-    padding: 12,
-  },
-  card: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    gap: 10,
-    padding: 16,
-  },
-  examName: {
-    color: '#F8FAFC',
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  counts: {
-    color: '#94A3B8',
-    fontSize: 13,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  startButton: {
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  startDisabled: {
-    backgroundColor: '#334155',
-  },
-  startLabel: {
-    color: '#F8FAFC',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  row: {
-    alignItems: 'center',
-    borderTopColor: '#334155',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 10,
-  },
-  rowText: {
-    flexShrink: 1,
-    gap: 2,
-  },
-  rowType: {
-    color: '#E2E8F0',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  rowDate: {
-    color: '#94A3B8',
-    fontSize: 12,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+    },
+    content: {
+      gap: 14,
+      padding: 16,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    empty: {
+      color: theme.textSecondary,
+      fontSize: 15,
+      lineHeight: 22,
+      marginTop: 12,
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      color: theme.onDangerSurface,
+      padding: 12,
+    },
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      gap: 10,
+      padding: 16,
+    },
+    examName: {
+      color: theme.textPrimary,
+      fontSize: 17,
+      fontWeight: '700',
+    },
+    counts: {
+      color: theme.textSecondary,
+      fontSize: 13,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    startButton: {
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    startDisabled: {
+      backgroundColor: theme.border,
+    },
+    startLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    row: {
+      alignItems: 'center',
+      borderTopColor: theme.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingTop: 10,
+    },
+    rowText: {
+      flexShrink: 1,
+      gap: 2,
+    },
+    rowType: {
+      color: theme.textBody,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    rowDate: {
+      color: theme.textSecondary,
+      fontSize: 12,
+    },
+  });

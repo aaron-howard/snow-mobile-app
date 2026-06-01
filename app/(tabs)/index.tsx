@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 
 import { useHomeDashboard, type HomeExamSummary } from '@domain/analytics/useHomeDashboard';
 import { ProgressRing } from '@ui/ProgressRing';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 
 const ACTIONS = [
   { key: 'quiz', label: 'Quiz', to: (id: string) => `/exam/${id}/quiz` },
@@ -12,6 +13,7 @@ const ACTIONS = [
 
 function ExamCard({ exam }: { exam: HomeExamSummary }) {
   const router = useRouter();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.card}>
       <Text style={styles.examName} accessibilityRole="header">
@@ -51,6 +53,8 @@ function ExamCard({ exam }: { exam: HomeExamSummary }) {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { loading, error, exams } = useHomeDashboard();
 
   return (
@@ -61,7 +65,7 @@ export default function HomeScreen() {
       <Text style={styles.disclaimer}>Unofficial — not affiliated with or endorsed by ServiceNow, Inc.</Text>
 
       {loading ? (
-        <ActivityIndicator color="#60A5FA" accessibilityLabel="Loading your study list" />
+        <ActivityIndicator color={theme.accent} accessibilityLabel="Loading your study list" />
       ) : null}
 
       {error ? (
@@ -93,85 +97,86 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-  },
-  content: {
-    gap: 14,
-    padding: 16,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  disclaimer: {
-    color: '#64748B',
-    fontSize: 12,
-  },
-  card: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    gap: 14,
-    padding: 16,
-  },
-  examName: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  cardBody: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 20,
-  },
-  streakBox: {
-    flex: 1,
-  },
-  streakValue: {
-    color: '#FBBF24',
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  streakLabel: {
-    color: '#94A3B8',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  actionButton: {
-    alignItems: 'center',
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    flexGrow: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  actionLabel: {
-    color: '#F8FAFC',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    color: '#FEE2E2',
-    padding: 12,
-  },
-  empty: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    gap: 12,
-    padding: 16,
-  },
-  emptyText: {
-    color: '#CBD5E1',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+    },
+    content: {
+      gap: 14,
+      padding: 16,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    disclaimer: {
+      color: theme.textSecondary,
+      fontSize: 12,
+    },
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      gap: 14,
+      padding: 16,
+    },
+    examName: {
+      color: theme.textPrimary,
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    cardBody: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 20,
+    },
+    streakBox: {
+      flex: 1,
+    },
+    streakValue: {
+      color: theme.warning,
+      fontSize: 28,
+      fontWeight: '800',
+    },
+    streakLabel: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    actionButton: {
+      alignItems: 'center',
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      flexGrow: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+    },
+    actionLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      color: theme.onDangerSurface,
+      padding: 12,
+    },
+    empty: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      gap: 12,
+      padding: 16,
+    },
+    emptyText: {
+      color: theme.textBody,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+  });

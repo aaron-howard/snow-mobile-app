@@ -1,5 +1,6 @@
 import { useCatalog } from '@/domain/catalog/useCatalog';
 import { EnrollmentLimitWarning } from '@ui/EnrollmentLimitWarning';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -30,8 +31,12 @@ export default function CatalogScreen() {
     enroll,
     contentUpdates,
     dismissContentUpdate,
+    downloadStates,
+    downloadExam,
     refresh,
   } = useCatalog();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   const examNameById = (id: string) => exams.find((e) => e.id === id)?.name ?? 'this exam';
 
@@ -57,7 +62,7 @@ export default function CatalogScreen() {
 
       {loading && exams.length === 0 ? (
         <View style={styles.centered} accessibilityLabel="Loading exam catalog">
-          <ActivityIndicator size="large" color="#60A5FA" />
+          <ActivityIndicator size="large" color={theme.accent} />
         </View>
       ) : null}
 
@@ -147,7 +152,7 @@ export default function CatalogScreen() {
               {expanded ? (
                 <View style={styles.detail}>
                   {showDetailSpinner ? (
-                    <ActivityIndicator color="#93C5FD" accessibilityLabel="Loading exam details" />
+                    <ActivityIndicator color={theme.accent} accessibilityLabel="Loading exam details" />
                   ) : null}
                   {showDetailBlock ? (
                     <>
@@ -172,6 +177,50 @@ export default function CatalogScreen() {
                       >
                         {detail.publishedQuestionCount} questions
                       </Text>
+
+                      <Text style={styles.sectionTitle} accessibilityRole="header">
+                        Offline access
+                      </Text>
+                      {(() => {
+                        const download = downloadStates[item.id];
+                        const downloading = download?.status === 'downloading';
+                        const downloaded =
+                          download?.status === 'done' || item.contentDownloadedAt !== null;
+                        return (
+                          <>
+                            <Pressable
+                              style={[styles.downloadButton, downloading ? styles.downloadButtonBusy : null]}
+                              onPress={() => void downloadExam(item.id)}
+                              disabled={downloading}
+                              accessibilityRole="button"
+                              accessibilityState={{ disabled: downloading, busy: downloading }}
+                              accessibilityLabel={
+                                downloaded
+                                  ? `Re-download ${item.name} for offline use`
+                                  : `Download ${item.name} for offline use`
+                              }
+                            >
+                              {downloading ? (
+                                <ActivityIndicator color={theme.onAccentStrong} accessibilityLabel="Downloading exam content" />
+                              ) : (
+                                <Text style={styles.downloadLabel}>
+                                  {downloaded ? 'Downloaded — re-download' : 'Download for offline use'}
+                                </Text>
+                              )}
+                            </Pressable>
+                            {download?.status === 'error' ? (
+                              <Text style={styles.downloadError} accessibilityRole="alert">
+                                {download.message}
+                              </Text>
+                            ) : null}
+                            {download?.status === 'done' ? (
+                              <Text style={styles.downloadDone} accessibilityLiveRegion="polite">
+                                Saved for offline use.
+                              </Text>
+                            ) : null}
+                          </>
+                        );
+                      })()}
 
                       <Text style={styles.sectionTitle} accessibilityRole="header">
                         Domain filter for study sessions
@@ -238,152 +287,182 @@ export default function CatalogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-    padding: 16,
-    paddingTop: 8,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  disclaimer: {
-    color: '#94A3B8',
-    fontSize: 12,
-    marginBottom: 12,
-  },
-  centered: {
-    paddingVertical: 24,
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    marginBottom: 12,
-    padding: 12,
-  },
-  errorText: {
-    color: '#FEE2E2',
-    marginBottom: 8,
-  },
-  dismissLink: {
-    color: '#FCA5A5',
-    fontWeight: '600',
-  },
-  updateBanner: {
-    backgroundColor: '#0C4A6E',
-    borderRadius: 8,
-    marginBottom: 12,
-    padding: 12,
-  },
-  updateText: {
-    color: '#E0F2FE',
-    marginBottom: 8,
-  },
-  updateDismissLink: {
-    color: '#7DD3FC',
-    fontWeight: '600',
-  },
-  empty: {
-    color: '#94A3B8',
-    marginTop: 24,
-    textAlign: 'center',
-  },
-  card: {
-    backgroundColor: '#1E293B',
-    borderRadius: 10,
-    marginBottom: 12,
-    padding: 14,
-  },
-  examTitle: {
-    color: '#F8FAFC',
-    fontSize: 17,
-    fontWeight: '600',
-  },
-  meta: {
-    color: '#94A3B8',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  enrolledPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#14532D',
-    borderRadius: 6,
-    color: '#BBF7D0',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 8,
-    overflow: 'hidden',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  detail: {
-    borderTopColor: '#334155',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: 12,
-    paddingTop: 12,
-  },
-  sectionTitle: {
-    color: '#E2E8F0',
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 6,
-    marginTop: 10,
-  },
-  domainRow: {
-    color: '#CBD5E1',
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  count: {
-    color: '#CBD5E1',
-    fontSize: 15,
-  },
-  helper: {
-    color: '#94A3B8',
-    fontSize: 13,
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingVertical: 4,
-  },
-  chip: {
-    borderColor: '#475569',
-    borderRadius: 20,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  chipSelected: {
-    backgroundColor: '#1D4ED8',
-    borderColor: '#3B82F6',
-  },
-  chipLabel: {
-    color: '#E2E8F0',
-    fontSize: 13,
-  },
-  enrollButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  enrollLabel: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  enrolledHint: {
-    color: '#94A3B8',
-    fontSize: 14,
-    marginTop: 16,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: theme.background,
+      padding: 16,
+      paddingTop: 8,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    disclaimer: {
+      color: theme.textSecondary,
+      fontSize: 12,
+      marginBottom: 12,
+    },
+    centered: {
+      paddingVertical: 24,
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      marginBottom: 12,
+      padding: 12,
+    },
+    errorText: {
+      color: theme.onDangerSurface,
+      marginBottom: 8,
+    },
+    dismissLink: {
+      color: theme.onDangerSurface,
+      fontWeight: '600',
+    },
+    updateBanner: {
+      backgroundColor: theme.infoSurface,
+      borderRadius: 8,
+      marginBottom: 12,
+      padding: 12,
+    },
+    updateText: {
+      color: theme.onInfoSurface,
+      marginBottom: 8,
+    },
+    updateDismissLink: {
+      color: theme.onInfoSurface,
+      fontWeight: '600',
+    },
+    empty: {
+      color: theme.textSecondary,
+      marginTop: 24,
+      textAlign: 'center',
+    },
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 14,
+    },
+    examTitle: {
+      color: theme.textPrimary,
+      fontSize: 17,
+      fontWeight: '600',
+    },
+    meta: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      marginTop: 4,
+    },
+    enrolledPill: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.successSurface,
+      borderRadius: 6,
+      color: theme.onSuccessSurface,
+      fontSize: 12,
+      fontWeight: '600',
+      marginTop: 8,
+      overflow: 'hidden',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    detail: {
+      borderTopColor: theme.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      marginTop: 12,
+      paddingTop: 12,
+    },
+    sectionTitle: {
+      color: theme.textBody,
+      fontSize: 15,
+      fontWeight: '600',
+      marginBottom: 6,
+      marginTop: 10,
+    },
+    domainRow: {
+      color: theme.textBody,
+      fontSize: 14,
+      marginBottom: 4,
+    },
+    count: {
+      color: theme.textBody,
+      fontSize: 15,
+    },
+    helper: {
+      color: theme.textSecondary,
+      fontSize: 13,
+      lineHeight: 18,
+      marginBottom: 8,
+    },
+    chipRow: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingVertical: 4,
+    },
+    chip: {
+      borderColor: theme.borderStrong,
+      borderRadius: 20,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    chipSelected: {
+      backgroundColor: theme.accentStrong,
+      borderColor: theme.accentStrong,
+    },
+    chipLabel: {
+      color: theme.textBody,
+      fontSize: 13,
+    },
+    downloadButton: {
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      marginTop: 8,
+      minHeight: 44,
+      justifyContent: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    downloadButtonBusy: {
+      opacity: 0.7,
+    },
+    downloadLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    downloadError: {
+      color: theme.danger,
+      fontSize: 13,
+      marginTop: 6,
+    },
+    downloadDone: {
+      color: theme.success,
+      fontSize: 13,
+      marginTop: 6,
+    },
+    enrollButton: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      marginTop: 16,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    enrollLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    enrolledHint: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      marginTop: 16,
+    },
+  });

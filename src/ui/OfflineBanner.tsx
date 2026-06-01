@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 export interface OfflineBannerProps {
   /** Whether the device is currently offline. */
   visible: boolean;
@@ -11,6 +14,7 @@ export interface OfflineBannerProps {
  * text so the state is never conveyed by color alone (Requirement 10.1).
  */
 export function OfflineBanner({ visible }: OfflineBannerProps) {
+  const styles = useThemedStyles(makeStyles);
   if (!visible) return null;
   return (
     <View
@@ -24,17 +28,18 @@ export function OfflineBanner({ visible }: OfflineBannerProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  banner: {
-    alignItems: 'center',
-    backgroundColor: '#78350F',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    width: '100%',
-  },
-  text: {
-    color: '#FEF3C7',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    banner: {
+      alignItems: 'center',
+      backgroundColor: theme.warningSurface,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      width: '100%',
+    },
+    text: {
+      color: theme.onWarningSurface,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+  });

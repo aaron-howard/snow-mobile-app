@@ -4,12 +4,15 @@ import { QuestionCard } from '@ui/QuestionCard';
 import { BookmarkButton } from '@ui/BookmarkButton';
 import { useQuiz, type QuizMode } from '@domain/practice/useQuiz';
 import { useBookmarkToggle } from '@domain/bookmarks/useBookmarkToggle';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 
 export default function QuizScreen() {
   const { examId, mode } = useLocalSearchParams<{ examId: string; mode?: string }>();
   const router = useRouter();
   const quizMode: QuizMode = mode === 'bookmark' ? 'bookmark' : 'standard';
   const { isBookmarked, toggle } = useBookmarkToggle(examId);
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   const {
     loading,
@@ -37,7 +40,7 @@ export default function QuizScreen() {
 
       {loading ? (
         <View style={styles.centered} accessibilityLabel="Starting quiz">
-          <ActivityIndicator size="large" color="#60A5FA" />
+          <ActivityIndicator size="large" color={theme.accent} />
         </View>
       ) : null}
 
@@ -141,7 +144,7 @@ export default function QuizScreen() {
           />
 
           {submitting ? (
-            <ActivityIndicator style={styles.inlineSpinner} color="#93C5FD" accessibilityLabel="Checking answer" />
+            <ActivityIndicator style={styles.inlineSpinner} color={theme.accent} accessibilityLabel="Checking answer" />
           ) : null}
 
           {result ? (
@@ -171,110 +174,111 @@ export default function QuizScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-    padding: 16,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  centered: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    color: '#FEE2E2',
-    marginBottom: 12,
-    padding: 12,
-  },
-  empty: {
-    color: '#94A3B8',
-    fontSize: 15,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  body: {
-    paddingBottom: 32,
-  },
-  resetBanner: {
-    backgroundColor: '#0C4A6E',
-    borderRadius: 8,
-    color: '#E0F2FE',
-    marginBottom: 12,
-    padding: 12,
-  },
-  progressRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  progress: {
-    color: '#94A3B8',
-    fontSize: 14,
-  },
-  inlineSpinner: {
-    marginTop: 16,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    marginTop: 20,
-    paddingVertical: 14,
-  },
-  primaryLabel: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    borderColor: '#475569',
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  secondaryLabel: {
-    color: '#E2E8F0',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  summary: {
-    alignItems: 'center',
-    paddingBottom: 32,
-    paddingTop: 16,
-  },
-  summaryScore: {
-    color: '#F8FAFC',
-    fontSize: 48,
-    fontWeight: '800',
-  },
-  summaryLine: {
-    color: '#CBD5E1',
-    fontSize: 16,
-    marginTop: 8,
-  },
-  breakdown: {
-    alignSelf: 'stretch',
-    marginTop: 24,
-  },
-  sectionTitle: {
-    color: '#E2E8F0',
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  breakdownRow: {
-    color: '#CBD5E1',
-    fontSize: 14,
-    marginBottom: 4,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+      padding: 16,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 12,
+    },
+    centered: {
+      alignItems: 'center',
+      paddingVertical: 32,
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      color: theme.onDangerSurface,
+      marginBottom: 12,
+      padding: 12,
+    },
+    empty: {
+      color: theme.textSecondary,
+      fontSize: 15,
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    body: {
+      paddingBottom: 32,
+    },
+    resetBanner: {
+      backgroundColor: theme.infoSurface,
+      borderRadius: 8,
+      color: theme.onInfoSurface,
+      marginBottom: 12,
+      padding: 12,
+    },
+    progressRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    progress: {
+      color: theme.textSecondary,
+      fontSize: 14,
+    },
+    inlineSpinner: {
+      marginTop: 16,
+    },
+    primaryButton: {
+      alignItems: 'center',
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      marginTop: 20,
+      paddingVertical: 14,
+    },
+    primaryLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    secondaryButton: {
+      borderColor: theme.borderStrong,
+      borderRadius: 8,
+      borderWidth: 1,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    secondaryLabel: {
+      color: theme.textBody,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    summary: {
+      alignItems: 'center',
+      paddingBottom: 32,
+      paddingTop: 16,
+    },
+    summaryScore: {
+      color: theme.textPrimary,
+      fontSize: 48,
+      fontWeight: '800',
+    },
+    summaryLine: {
+      color: theme.textBody,
+      fontSize: 16,
+      marginTop: 8,
+    },
+    breakdown: {
+      alignSelf: 'stretch',
+      marginTop: 24,
+    },
+    sectionTitle: {
+      color: theme.textBody,
+      fontSize: 15,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    breakdownRow: {
+      color: theme.textBody,
+      fontSize: 14,
+      marginBottom: 4,
+    },
+  });

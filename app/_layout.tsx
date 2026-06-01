@@ -10,7 +10,7 @@ import { useOfflineStatus } from '../src/domain/offline/useOfflineStatus';
 import { useStaleDownloads } from '../src/domain/offline/useStaleDownloads';
 import { OfflineBanner } from '../src/ui/OfflineBanner';
 import { ContentStaleWarning } from '../src/ui/ContentStaleWarning';
-import { ThemeProvider } from '../src/ui/theme';
+import { ThemeProvider, useTheme, useThemedStyles, type Theme } from '../src/ui/theme';
 
 /**
  * SecureStore-backed token cache for Clerk. Keys are short and
@@ -68,6 +68,8 @@ function RootStack() {
 
   const isOffline = useOfflineStatus();
   const hasStaleDownloads = useStaleDownloads();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   useUserSync();
 
@@ -120,7 +122,7 @@ function RootStack() {
   if (!isLoaded) {
     return (
       <View style={styles.splash} accessibilityLabel="Loading">
-        <ActivityIndicator color="#60A5FA" size="large" />
+        <ActivityIndicator color={theme.accent} size="large" />
       </View>
     );
   }
@@ -145,15 +147,16 @@ export default function RootLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-  },
-  splash: {
-    alignItems: 'center',
-    backgroundColor: '#0F172A',
-    flex: 1,
-    justifyContent: 'center',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      backgroundColor: theme.background,
+      flex: 1,
+    },
+    splash: {
+      alignItems: 'center',
+      backgroundColor: theme.background,
+      flex: 1,
+      justifyContent: 'center',
+    },
+  });

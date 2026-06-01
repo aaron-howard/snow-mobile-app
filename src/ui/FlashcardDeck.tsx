@@ -9,6 +9,9 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import type { FlashcardRecord } from '@domain/flashcards';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 /** Flip animation duration — must complete within 300 ms (Requirement 4.4). */
 export const FLIP_DURATION_MS = 300;
 const SWIPE_THRESHOLD = 80;
@@ -36,6 +39,7 @@ export function FlashcardDeck({
   onSwipeStillLearning,
   onCreateRequest,
 }: FlashcardDeckProps) {
+  const styles = useThemedStyles(makeStyles);
   const [flipped, setFlipped] = useState(false);
   const rotation = useSharedValue(0);
 
@@ -126,71 +130,72 @@ export function FlashcardDeck({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: 16,
-  },
-  card: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    justifyContent: 'center',
-    minHeight: 220,
-    padding: 24,
-  },
-  sideLabel: {
-    color: '#60A5FA',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
-    marginBottom: 12,
-    textTransform: 'uppercase',
-  },
-  faceText: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '600',
-    lineHeight: 30,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
-    alignItems: 'center',
-    borderRadius: 10,
-    flex: 1,
-    paddingVertical: 14,
-  },
-  stillButton: {
-    backgroundColor: '#7C2D12',
-  },
-  knownButton: {
-    backgroundColor: '#14532D',
-  },
-  actionLabel: {
-    color: '#F8FAFC',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  emptyWrap: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyText: {
-    color: '#94A3B8',
-    fontSize: 15,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  primaryButton: {
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  primaryLabel: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    wrap: {
+      gap: 16,
+    },
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 16,
+      justifyContent: 'center',
+      minHeight: 220,
+      padding: 24,
+    },
+    sideLabel: {
+      color: theme.accent,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 1,
+      marginBottom: 12,
+      textTransform: 'uppercase',
+    },
+    faceText: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '600',
+      lineHeight: 30,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    actionButton: {
+      alignItems: 'center',
+      borderRadius: 10,
+      flex: 1,
+      paddingVertical: 14,
+    },
+    stillButton: {
+      backgroundColor: theme.warningSurface,
+    },
+    knownButton: {
+      backgroundColor: theme.successSurface,
+    },
+    actionLabel: {
+      color: theme.textPrimary,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    emptyWrap: {
+      alignItems: 'center',
+      paddingVertical: 40,
+    },
+    emptyText: {
+      color: theme.textSecondary,
+      fontSize: 15,
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    primaryButton: {
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    primaryLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  });

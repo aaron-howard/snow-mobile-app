@@ -9,9 +9,9 @@
  * (`planContentUpdateDeliveries`) so it can be exhaustively tested without a
  * database. The orchestrator (`processContentUpdates`) wires that decision to
  * the repositories plus two injected side-effects:
- *   - `refreshContent` — re-downloads the exam's offline content (the real
- *     binary download lands in task 13.5 via Expo FileSystem; until then a
- *     no-op default just bumps the locally-recorded content version).
+ *   - `refreshContent` — re-downloads the exam's offline content. `useCatalog`
+ *     injects the real Expo FileSystem downloader (task 16.10); the default is
+ *     a no-op that just bumps the locally-recorded content version.
  *   - `notify` — surfaces the update to the enrolled user (in-app banner now,
  *     push notification once task 12 is wired).
  */

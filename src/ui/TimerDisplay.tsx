@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 export interface TimerDisplayProps {
   remainingSeconds: number;
   /** Visually + semantically flag the final stretch (does not change layout position). */
@@ -25,6 +28,7 @@ export function TimerDisplay({
   warnAtSeconds = 60,
   paused = false,
 }: TimerDisplayProps) {
+  const styles = useThemedStyles(makeStyles);
   const formatted = formatRemaining(remainingSeconds);
   const warning = remainingSeconds <= warnAtSeconds && !paused;
   const label = paused
@@ -44,34 +48,35 @@ export function TimerDisplay({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    backgroundColor: '#1E293B',
-    borderBottomColor: '#334155',
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'center',
-    paddingVertical: 10,
-  },
-  warning: {
-    backgroundColor: '#7F1D1D',
-  },
-  label: {
-    color: '#94A3B8',
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  time: {
-    color: '#F8FAFC',
-    fontSize: 20,
-    fontVariant: ['tabular-nums'],
-    fontWeight: '700',
-  },
-  warningText: {
-    color: '#FEE2E2',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      borderBottomColor: theme.border,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      gap: 10,
+      justifyContent: 'center',
+      paddingVertical: 10,
+    },
+    warning: {
+      backgroundColor: theme.dangerSurface,
+    },
+    label: {
+      color: theme.textSecondary,
+      fontSize: 13,
+      fontWeight: '600',
+      letterSpacing: 0.5,
+      textTransform: 'uppercase',
+    },
+    time: {
+      color: theme.textPrimary,
+      fontSize: 20,
+      fontVariant: ['tabular-nums'],
+      fontWeight: '700',
+    },
+    warningText: {
+      color: theme.onDangerSurface,
+    },
+  });

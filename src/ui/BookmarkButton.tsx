@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 /** Active/inactive transition completes well within the 500 ms budget (Req 7.1, 7.2). */
 export const BOOKMARK_ANIM_MS = 200;
 
@@ -24,6 +27,7 @@ export function BookmarkButton({
   itemLabel = 'item',
   disabled = false,
 }: BookmarkButtonProps) {
+  const styles = useThemedStyles(makeStyles);
   const scale = useSharedValue(1);
 
   useEffect(() => {
@@ -53,20 +57,21 @@ export function BookmarkButton({
   );
 }
 
-const styles = StyleSheet.create({
-  pressable: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 4,
-  },
-  icon: {
-    fontSize: 24,
-    lineHeight: 28,
-  },
-  iconActive: {
-    color: '#FACC15',
-  },
-  iconInactive: {
-    color: '#94A3B8',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    pressable: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 4,
+    },
+    icon: {
+      fontSize: 24,
+      lineHeight: 28,
+    },
+    iconActive: {
+      color: theme.warning,
+    },
+    iconInactive: {
+      color: theme.textSecondary,
+    },
+  });

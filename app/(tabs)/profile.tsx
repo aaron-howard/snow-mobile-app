@@ -1,6 +1,6 @@
 import { useProfile } from '@/domain/analytics/useProfile';
 import { useNotificationSettings } from '@/domain/notifications/useNotificationSettings';
-import { useTheme } from '@ui/theme';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 import {
   ActivityIndicator,
   Pressable,
@@ -19,6 +19,7 @@ interface StatProps {
 }
 
 function StatCard({ label, value, unit }: StatProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View
       style={styles.statCard}
@@ -38,6 +39,7 @@ interface ToggleRowProps {
 }
 
 function ToggleRow({ label, value, onValueChange }: ToggleRowProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
@@ -59,6 +61,8 @@ interface TimeFieldProps {
 }
 
 function TimeField({ label, value, onCommit }: TimeFieldProps) {
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
@@ -66,7 +70,7 @@ function TimeField({ label, value, onCommit }: TimeFieldProps) {
         defaultValue={value}
         onEndEditing={(e) => onCommit(e.nativeEvent.text)}
         placeholder="HH:MM"
-        placeholderTextColor="#64748B"
+        placeholderTextColor={theme.textSecondary}
         keyboardType="numbers-and-punctuation"
         style={styles.timeInput}
         accessibilityLabel={`${label}, 24-hour HH:MM`}
@@ -76,11 +80,15 @@ function TimeField({ label, value, onCommit }: TimeFieldProps) {
 }
 
 function NotificationSettingsSection() {
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { loading, error, settings, permission, update, requestPermission } =
     useNotificationSettings();
 
   if (loading) {
-    return <ActivityIndicator color="#60A5FA" accessibilityLabel="Loading notification settings" />;
+    return (
+      <ActivityIndicator color={theme.accent} accessibilityLabel="Loading notification settings" />
+    );
   }
   if (error) {
     return (
@@ -160,6 +168,8 @@ export default function ProfileScreen() {
     totalQuestionsAnswered,
     totalStudySessions,
   } = useProfile();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -168,7 +178,7 @@ export default function ProfileScreen() {
       </Text>
 
       {loading ? (
-        <ActivityIndicator color="#60A5FA" accessibilityLabel="Loading your profile" />
+        <ActivityIndicator color={theme.accent} accessibilityLabel="Loading your profile" />
       ) : null}
 
       {error ? (
@@ -194,6 +204,7 @@ export default function ProfileScreen() {
 
 function AccessibilitySection() {
   const { highContrast, setHighContrast } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.section}>
       <Text style={styles.sectionHeading} accessibilityRole="header">
@@ -208,90 +219,91 @@ function AccessibilitySection() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-  },
-  content: {
-    gap: 14,
-    padding: 16,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  statCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    flexBasis: '47%',
-    flexGrow: 1,
-    gap: 6,
-    padding: 18,
-  },
-  statValue: {
-    color: '#F8FAFC',
-    fontSize: 32,
-    fontWeight: '800',
-  },
-  statLabel: {
-    color: '#94A3B8',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    color: '#FEE2E2',
-    padding: 12,
-  },
-  section: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    gap: 4,
-    marginTop: 8,
-    padding: 16,
-  },
-  sectionHeading: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  row: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  rowLabel: {
-    color: '#E2E8F0',
-    flexShrink: 1,
-    fontSize: 15,
-  },
-  timeInput: {
-    backgroundColor: '#0F172A',
-    borderRadius: 8,
-    color: '#F8FAFC',
-    minWidth: 90,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    textAlign: 'center',
-  },
-  permissionPrompt: {
-    backgroundColor: '#78350F',
-    borderRadius: 8,
-    marginBottom: 8,
-    padding: 12,
-  },
-  permissionPromptText: {
-    color: '#FEF3C7',
-    fontSize: 14,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+    },
+    content: {
+      gap: 14,
+      padding: 16,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 12,
+    },
+    statCard: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      flexBasis: '47%',
+      flexGrow: 1,
+      gap: 6,
+      padding: 18,
+    },
+    statValue: {
+      color: theme.textPrimary,
+      fontSize: 32,
+      fontWeight: '800',
+    },
+    statLabel: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      color: theme.onDangerSurface,
+      padding: 12,
+    },
+    section: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      gap: 4,
+      marginTop: 8,
+      padding: 16,
+    },
+    sectionHeading: {
+      color: theme.textPrimary,
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    row: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 8,
+    },
+    rowLabel: {
+      color: theme.textBody,
+      flexShrink: 1,
+      fontSize: 15,
+    },
+    timeInput: {
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      color: theme.textPrimary,
+      minWidth: 90,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      textAlign: 'center',
+    },
+    permissionPrompt: {
+      backgroundColor: theme.warningSurface,
+      borderRadius: 8,
+      marginBottom: 8,
+      padding: 12,
+    },
+    permissionPromptText: {
+      color: theme.onWarningSurface,
+      fontSize: 14,
+    },
+  });

@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useTheme, useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 export interface DomainAccuracyDatum {
   domainId: string;
   name: string;
@@ -11,10 +14,10 @@ export interface DomainAccuracyChartProps {
   data: readonly DomainAccuracyDatum[];
 }
 
-function bandColor(percent: number): string {
-  if (percent >= 80) return '#16A34A';
-  if (percent >= 50) return '#D97706';
-  return '#DC2626';
+function bandColor(theme: Theme, percent: number): string {
+  if (percent >= 80) return theme.bandSuccess;
+  if (percent >= 50) return theme.bandWarning;
+  return theme.bandDanger;
 }
 
 function percentOf(correct: number, total: number): number {
@@ -27,11 +30,13 @@ function percentOf(correct: number, total: number): number {
  * color alone.
  */
 export function DomainAccuracyChart({ data }: DomainAccuracyChartProps) {
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.wrap} accessibilityRole="summary">
       {data.map((datum) => {
         const percent = percentOf(datum.correct, datum.total);
-        const color = bandColor(percent);
+        const color = bandColor(theme, percent);
         return (
           <View
             key={datum.domainId}
@@ -59,38 +64,39 @@ export function DomainAccuracyChart({ data }: DomainAccuracyChartProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: 14,
-  },
-  row: {
-    gap: 6,
-  },
-  rowHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  name: {
-    color: '#0F172A',
-    flexShrink: 1,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  percent: {
-    color: '#475569',
-    fontSize: 13,
-    fontVariant: ['tabular-nums'],
-    fontWeight: '700',
-  },
-  track: {
-    backgroundColor: '#E2E8F0',
-    borderRadius: 6,
-    height: 12,
-    overflow: 'hidden',
-  },
-  fill: {
-    borderRadius: 6,
-    height: 12,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    wrap: {
+      gap: 14,
+    },
+    row: {
+      gap: 6,
+    },
+    rowHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    name: {
+      color: theme.cardText,
+      flexShrink: 1,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    percent: {
+      color: theme.cardMuted,
+      fontSize: 13,
+      fontVariant: ['tabular-nums'],
+      fontWeight: '700',
+    },
+    track: {
+      backgroundColor: theme.cardTrack,
+      borderRadius: 6,
+      height: 12,
+      overflow: 'hidden',
+    },
+    fill: {
+      borderRadius: 6,
+      height: 12,
+    },
+  });

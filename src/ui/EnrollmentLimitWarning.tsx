@@ -1,5 +1,8 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 export interface EnrollmentLimitWarningProps {
   visible: boolean;
   onDismiss: () => void;
@@ -9,6 +12,7 @@ export interface EnrollmentLimitWarningProps {
  * Modal shown when the user tries to enroll in more than five active exams (Req 2.6).
  */
 export function EnrollmentLimitWarning({ visible, onDismiss }: EnrollmentLimitWarningProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Modal
       visible={visible}
@@ -44,40 +48,41 @@ export function EnrollmentLimitWarning({ visible, onDismiss }: EnrollmentLimitWa
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  card: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 20,
-  },
-  title: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  body: {
-    color: '#CBD5E1',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  button: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  buttonLabel: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(15, 23, 42, 0.65)',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 20,
+    },
+    title: {
+      color: theme.textPrimary,
+      fontSize: 18,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    body: {
+      color: theme.textBody,
+      fontSize: 15,
+      lineHeight: 22,
+      marginBottom: 16,
+    },
+    button: {
+      alignSelf: 'flex-end',
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    buttonLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  });

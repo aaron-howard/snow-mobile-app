@@ -1,5 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 export interface ContentStaleWarningProps {
   /** Whether the downloaded content is more than 30 days old. */
   visible: boolean;
@@ -13,6 +16,7 @@ export interface ContentStaleWarningProps {
  * assistive tech and pairs an icon with text (Requirement 10.1).
  */
 export function ContentStaleWarning({ visible, onRefresh }: ContentStaleWarningProps) {
+  const styles = useThemedStyles(makeStyles);
   if (!visible) return null;
 
   const message = '\u24D8 Downloaded content is over 30 days old. Refresh when connected.';
@@ -43,17 +47,18 @@ export function ContentStaleWarning({ visible, onRefresh }: ContentStaleWarningP
   );
 }
 
-const styles = StyleSheet.create({
-  banner: {
-    alignItems: 'center',
-    backgroundColor: '#1E3A8A',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    width: '100%',
-  },
-  text: {
-    color: '#DBEAFE',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    banner: {
+      alignItems: 'center',
+      backgroundColor: theme.infoSurface,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      width: '100%',
+    },
+    text: {
+      color: theme.onInfoSurface,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+  });

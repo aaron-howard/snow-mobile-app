@@ -1,6 +1,9 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { AnswerChoiceRecord, AnswerResult, QuestionRecord } from '@domain/practice';
 
+import { useThemedStyles } from './theme';
+import type { Theme } from './theme';
+
 export interface QuestionCardProps {
   question: QuestionRecord;
   choices: AnswerChoiceRecord[];
@@ -29,6 +32,7 @@ export function QuestionCard({
   result,
   onSelect,
 }: QuestionCardProps) {
+  const styles = useThemedStyles(makeStyles);
   const answered = result !== null;
 
   return (
@@ -115,81 +119,82 @@ function choiceA11yLabel(
   return text;
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 16,
-  },
-  image: {
-    width: '100%',
-    height: 180,
-    borderRadius: 8,
-    marginBottom: 12,
-    backgroundColor: '#0F172A',
-  },
-  questionText: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 25,
-    marginBottom: 16,
-  },
-  choices: {
-    gap: 10,
-  },
-  choice: {
-    borderColor: '#475569',
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 14,
-  },
-  choiceSelected: {
-    borderColor: '#3B82F6',
-  },
-  choiceCorrect: {
-    backgroundColor: '#14532D',
-    borderColor: '#22C55E',
-  },
-  choiceWrong: {
-    backgroundColor: '#7F1D1D',
-    borderColor: '#F87171',
-  },
-  choiceRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  choiceIcon: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  choiceText: {
-    color: '#E2E8F0',
-    flexShrink: 1,
-    fontSize: 16,
-  },
-  feedback: {
-    borderTopColor: '#334155',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: 16,
-    paddingTop: 12,
-  },
-  feedbackHeading: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  correctText: {
-    color: '#4ADE80',
-  },
-  wrongText: {
-    color: '#FCA5A5',
-  },
-  explanation: {
-    color: '#CBD5E1',
-    fontSize: 15,
-    lineHeight: 21,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 16,
+    },
+    image: {
+      width: '100%',
+      height: 180,
+      borderRadius: 8,
+      marginBottom: 12,
+      backgroundColor: theme.background,
+    },
+    questionText: {
+      color: theme.textPrimary,
+      fontSize: 18,
+      fontWeight: '600',
+      lineHeight: 25,
+      marginBottom: 16,
+    },
+    choices: {
+      gap: 10,
+    },
+    choice: {
+      borderColor: theme.borderStrong,
+      borderRadius: 10,
+      borderWidth: 1,
+      padding: 14,
+    },
+    choiceSelected: {
+      borderColor: theme.accentStrong,
+    },
+    choiceCorrect: {
+      backgroundColor: theme.successSurface,
+      borderColor: theme.success,
+    },
+    choiceWrong: {
+      backgroundColor: theme.dangerSurface,
+      borderColor: theme.danger,
+    },
+    choiceRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 10,
+    },
+    choiceIcon: {
+      color: theme.textPrimary,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    choiceText: {
+      color: theme.textBody,
+      flexShrink: 1,
+      fontSize: 16,
+    },
+    feedback: {
+      borderTopColor: theme.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      marginTop: 16,
+      paddingTop: 12,
+    },
+    feedbackHeading: {
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    correctText: {
+      color: theme.success,
+    },
+    wrongText: {
+      color: theme.danger,
+    },
+    explanation: {
+      color: theme.textBody,
+      fontSize: 15,
+      lineHeight: 21,
+    },
+  });

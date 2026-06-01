@@ -2,11 +2,14 @@ import { useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useCallback, useState } from 'react';
 import { useReviewQueue } from '@domain/practice/useReviewQueue';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 
 export default function ReviewScreen() {
   const { examId } = useLocalSearchParams<{ examId: string }>();
   const { loading, error, questions, refresh } = useReviewQueue(examId);
   const [refreshing, setRefreshing] = useState(false);
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -28,7 +31,7 @@ export default function ReviewScreen() {
 
       {loading && questions.length === 0 ? (
         <View style={styles.centered} accessibilityLabel="Loading review queue">
-          <ActivityIndicator size="large" color="#60A5FA" />
+          <ActivityIndicator size="large" color={theme.accent} />
         </View>
       ) : null}
 
@@ -68,56 +71,57 @@ export default function ReviewScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-    padding: 16,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  subhead: {
-    color: '#94A3B8',
-    fontSize: 14,
-    marginBottom: 16,
-    marginTop: 4,
-  },
-  centered: {
-    paddingVertical: 32,
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    color: '#FEE2E2',
-    marginBottom: 12,
-    padding: 12,
-  },
-  empty: {
-    color: '#94A3B8',
-    fontSize: 15,
-    marginTop: 24,
-    textAlign: 'center',
-  },
-  row: {
-    backgroundColor: '#1E293B',
-    borderRadius: 10,
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 10,
-    padding: 14,
-  },
-  rowIndex: {
-    color: '#60A5FA',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  rowText: {
-    color: '#E2E8F0',
-    flexShrink: 1,
-    fontSize: 15,
-    lineHeight: 21,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+      padding: 16,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    subhead: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      marginBottom: 16,
+      marginTop: 4,
+    },
+    centered: {
+      paddingVertical: 32,
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      color: theme.onDangerSurface,
+      marginBottom: 12,
+      padding: 12,
+    },
+    empty: {
+      color: theme.textSecondary,
+      fontSize: 15,
+      marginTop: 24,
+      textAlign: 'center',
+    },
+    row: {
+      backgroundColor: theme.surface,
+      borderRadius: 10,
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 10,
+      padding: 14,
+    },
+    rowIndex: {
+      color: theme.accent,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    rowText: {
+      color: theme.textBody,
+      flexShrink: 1,
+      fontSize: 15,
+      lineHeight: 21,
+    },
+  });

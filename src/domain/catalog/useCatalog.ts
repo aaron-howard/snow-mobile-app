@@ -2,8 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRepositories } from '@db/repositories';
 import type { ExamDTO, TopicDomainDTO } from '@db/repositories/types';
 import { EnrollmentGuard } from '@domain/enrollment';
+import {
+  defaultDownloadDeps,
+  downloadExamContent,
+  InsufficientStorageError,
+} from '@/offline/examContentDownload';
 import { loadDomainSelections, persistDomainSelections } from './domainSelectionStorage';
 import { processContentUpdates, type ContentUpdateDelivery } from './contentUpdateDelivery';
+
+export type ExamDownloadStatus = 'idle' | 'downloading' | 'done' | 'error';
+
+export interface ExamDownloadState {
+  status: ExamDownloadStatus;
+  message?: string;
+}
 
 export interface CatalogDetail {
   examId: string;
@@ -30,6 +42,9 @@ export interface UseCatalogResult {
   /** Pending content-update notices for enrolled, downloaded exams (Req 2.7). */
   contentUpdates: ContentUpdateDelivery[];
   dismissContentUpdate: (notificationId: string) => void;
+  /** Per-exam offline-download status for the user-triggered download (Req 9.1). */
+  downloadStates: Record<string, ExamDownloadState>;
+  downloadExam: (examId: string) => Promise<void>;
   refresh: () => Promise<void>;
 }
 
@@ -46,18 +61,23 @@ export function useCatalog(): UseCatalogResult {
   const [detailLoading, setDetailLoading] = useState(false);
   const [enrollmentLimitVisible, setEnrollmentLimitVisible] = useState(false);
   const [contentUpdates, setContentUpdates] = useState<ContentUpdateDelivery[]>([]);
+  const [downloadStates, setDownloadStates] = useState<Record<string, ExamDownloadState>>({});
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
       // Deliver any pending content updates before reading the catalog so the
-      // list reflects refreshed content versions (Req 2.7). The actual offline
-      // binary download is wired in task 13.5; failures retry on next refresh.
+      // list reflects refreshed content versions (Req 2.7). `refreshContent`
+      // re-downloads the offline bundle via the real downloader (task 16.10);
+      // failures are swallowed below and retried on the next refresh.
       try {
         const result = await processContentUpdates({
           contentUpdateNotifications: repos.contentUpdateNotifications,
           exams: repos.exams,
+          refreshContent: async (examId: string) => {
+            await downloadExamContent(examId, defaultDownloadDeps);
+          },
         });
         if (result.delivered.length > 0) {
           setContentUpdates((prev) => {
@@ -82,6 +102,30 @@ export function useCatalog(): UseCatalogResult {
   const dismissContentUpdate = useCallback((notificationId: string) => {
     setContentUpdates((prev) => prev.filter((d) => d.notificationId !== notificationId));
   }, []);
+
+  const downloadExam = useCallback(
+    async (examId: string) => {
+      setDownloadStates((prev) => ({ ...prev, [examId]: { status: 'downloading' } }));
+      try {
+        const manifest = await downloadExamContent(examId, defaultDownloadDeps);
+        const target = exams.find((e) => e.id === examId);
+        await repos.exams.markContentDownloaded(
+          examId,
+          manifest.downloadedAt,
+          target?.contentVersion ?? '',
+        );
+        setDownloadStates((prev) => ({ ...prev, [examId]: { status: 'done' } }));
+        await refresh();
+      } catch (err) {
+        const message =
+          err instanceof InsufficientStorageError
+            ? 'Not enough free space to download this exam for offline use.'
+            : 'Download failed. Check your connection and try again.';
+        setDownloadStates((prev) => ({ ...prev, [examId]: { status: 'error', message } }));
+      }
+    },
+    [exams, repos, refresh],
+  );
 
   useEffect(() => {
     void refresh();
@@ -176,6 +220,8 @@ export function useCatalog(): UseCatalogResult {
     enroll,
     contentUpdates,
     dismissContentUpdate,
+    downloadStates,
+    downloadExam,
     refresh,
   };
 }

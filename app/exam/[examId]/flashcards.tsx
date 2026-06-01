@@ -14,10 +14,13 @@ import { FlashcardDeck } from '@ui/FlashcardDeck';
 import { BookmarkButton } from '@ui/BookmarkButton';
 import { useFlashcards, type FlashcardMode } from '@domain/flashcards/useFlashcards';
 import { useBookmarkToggle } from '@domain/bookmarks/useBookmarkToggle';
+import { useTheme, useThemedStyles, type Theme } from '@ui/theme';
 
 export default function FlashcardsScreen() {
   const { examId, mode } = useLocalSearchParams<{ examId: string; mode?: string }>();
   const fcMode: FlashcardMode = mode === 'bookmark' ? 'bookmark' : 'standard';
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const {
     loading,
     error,
@@ -74,7 +77,7 @@ export default function FlashcardsScreen() {
 
       {loading ? (
         <View style={styles.centered} accessibilityLabel="Loading flashcards">
-          <ActivityIndicator size="large" color="#60A5FA" />
+          <ActivityIndicator size="large" color={theme.accent} />
         </View>
       ) : null}
 
@@ -196,7 +199,7 @@ export default function FlashcardsScreen() {
               onChangeText={setTerm}
               style={styles.input}
               placeholder="e.g. GlideRecord"
-              placeholderTextColor="#64748B"
+              placeholderTextColor={theme.textSecondary}
               accessibilityLabel="Flashcard term"
             />
 
@@ -206,7 +209,7 @@ export default function FlashcardsScreen() {
               onChangeText={setDefinition}
               style={[styles.input, styles.inputMultiline]}
               placeholder="What does it mean?"
-              placeholderTextColor="#64748B"
+              placeholderTextColor={theme.textSecondary}
               multiline
               accessibilityLabel="Flashcard definition"
             />
@@ -228,7 +231,7 @@ export default function FlashcardsScreen() {
                 style={styles.primaryButton}
               >
                 {creating ? (
-                  <ActivityIndicator color="#F8FAFC" />
+                  <ActivityIndicator color={theme.onAccentStrong} />
                 ) : (
                   <Text style={styles.primaryLabel}>Save</Text>
                 )}
@@ -241,180 +244,181 @@ export default function FlashcardsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#0F172A',
-    flex: 1,
-    padding: 16,
-  },
-  headerRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  heading: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  addButton: {
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  addLabel: {
-    color: '#93C5FD',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  centered: {
-    paddingVertical: 32,
-  },
-  errorBanner: {
-    backgroundColor: '#7F1D1D',
-    borderRadius: 8,
-    color: '#FEE2E2',
-    marginBottom: 12,
-    padding: 12,
-  },
-  deckRow: {
-    flexGrow: 0,
-    marginBottom: 12,
-  },
-  chips: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  chip: {
-    borderColor: '#475569',
-    borderRadius: 20,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  chipSelected: {
-    backgroundColor: '#1D4ED8',
-    borderColor: '#3B82F6',
-  },
-  chipLabel: {
-    color: '#E2E8F0',
-    fontSize: 13,
-  },
-  sessionBar: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 16,
-  },
-  stat: {
-    color: '#CBD5E1',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  endButton: {
-    borderColor: '#475569',
-    borderRadius: 8,
-    borderWidth: 1,
-    marginLeft: 'auto',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  endLabel: {
-    color: '#E2E8F0',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  summary: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  summaryHeading: {
-    color: '#F8FAFC',
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 16,
-  },
-  summaryLine: {
-    color: '#CBD5E1',
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  primaryLabel: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modalBackdrop: {
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 20,
-  },
-  modalTitle: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  createError: {
-    color: '#FCA5A5',
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  inputLabel: {
-    color: '#94A3B8',
-    fontSize: 13,
-    marginBottom: 6,
-    marginTop: 10,
-  },
-  input: {
-    backgroundColor: '#0F172A',
-    borderColor: '#334155',
-    borderRadius: 8,
-    borderWidth: 1,
-    color: '#F8FAFC',
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  inputMultiline: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'flex-end',
-    marginTop: 8,
-  },
-  secondaryButton: {
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-    borderColor: '#475569',
-    borderRadius: 8,
-    borderWidth: 1,
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  secondaryLabel: {
-    color: '#E2E8F0',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+      padding: 16,
+    },
+    headerRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    heading: {
+      color: theme.textPrimary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    addButton: {
+      backgroundColor: theme.surface,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+    },
+    addLabel: {
+      color: theme.accent,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    centered: {
+      paddingVertical: 32,
+    },
+    errorBanner: {
+      backgroundColor: theme.dangerSurface,
+      borderRadius: 8,
+      color: theme.onDangerSurface,
+      marginBottom: 12,
+      padding: 12,
+    },
+    deckRow: {
+      flexGrow: 0,
+      marginBottom: 12,
+    },
+    chips: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    chip: {
+      borderColor: theme.borderStrong,
+      borderRadius: 20,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    chipSelected: {
+      backgroundColor: theme.accentStrong,
+      borderColor: theme.accentStrong,
+    },
+    chipLabel: {
+      color: theme.textBody,
+      fontSize: 13,
+    },
+    sessionBar: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 16,
+      marginBottom: 16,
+    },
+    stat: {
+      color: theme.textBody,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    endButton: {
+      borderColor: theme.borderStrong,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginLeft: 'auto',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    endLabel: {
+      color: theme.textBody,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    summary: {
+      alignItems: 'center',
+      paddingVertical: 32,
+    },
+    summaryHeading: {
+      color: theme.textPrimary,
+      fontSize: 20,
+      fontWeight: '700',
+      marginBottom: 16,
+    },
+    summaryLine: {
+      color: theme.textBody,
+      fontSize: 16,
+      marginBottom: 8,
+    },
+    primaryButton: {
+      alignItems: 'center',
+      backgroundColor: theme.accentStrong,
+      borderRadius: 8,
+      marginTop: 16,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    primaryLabel: {
+      color: theme.onAccentStrong,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    modalBackdrop: {
+      backgroundColor: 'rgba(15, 23, 42, 0.65)',
+      flex: 1,
+      justifyContent: 'center',
+      padding: 24,
+    },
+    modalCard: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 20,
+    },
+    modalTitle: {
+      color: theme.textPrimary,
+      fontSize: 18,
+      fontWeight: '600',
+      marginBottom: 12,
+    },
+    createError: {
+      color: theme.danger,
+      fontSize: 14,
+      marginBottom: 12,
+    },
+    inputLabel: {
+      color: theme.textSecondary,
+      fontSize: 13,
+      marginBottom: 6,
+      marginTop: 10,
+    },
+    input: {
+      backgroundColor: theme.background,
+      borderColor: theme.border,
+      borderRadius: 8,
+      borderWidth: 1,
+      color: theme.textPrimary,
+      fontSize: 15,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    inputMultiline: {
+      minHeight: 80,
+      textAlignVertical: 'top',
+    },
+    modalActions: {
+      flexDirection: 'row',
+      gap: 12,
+      justifyContent: 'flex-end',
+      marginTop: 8,
+    },
+    secondaryButton: {
+      alignItems: 'center',
+      alignSelf: 'flex-end',
+      borderColor: theme.borderStrong,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginTop: 16,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    secondaryLabel: {
+      color: theme.textBody,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+  });

@@ -60,6 +60,8 @@ function mockDefault() {
       refreshDeadline: number;
     }[],
     dismissContentUpdate: jest.fn(),
+    downloadStates: {} as Record<string, { status: string; message?: string }>,
+    downloadExam: jest.fn().mockResolvedValue(undefined),
     refresh: jest.fn().mockResolvedValue(undefined),
   };
 }
@@ -155,6 +157,38 @@ describe('CatalogScreen', () => {
       getByLabelText('Dismiss content update notice for Certified System Administrator (CSA)'),
     );
     expect(dismissContentUpdate).toHaveBeenCalledWith('cun-1');
+  });
+
+  test('offline download button triggers downloadExam (Req 9.1)', async () => {
+    const downloadExam = jest.fn().mockResolvedValue(undefined);
+    const domain = { id: 'dom-1', examId: 'exam-1', name: 'Platform', weightPercent: 35 };
+    setupHook({
+      selectedExamId: 'exam-1',
+      detail: { examId: 'exam-1', domains: [domain], publishedQuestionCount: 2 },
+      detailLoading: false,
+      downloadExam,
+    });
+    const { getByLabelText } = render(<CatalogScreen />);
+    fireEvent.press(
+      getByLabelText('Download Certified System Administrator (CSA) for offline use'),
+    );
+    await waitFor(() => {
+      expect(downloadExam).toHaveBeenCalledWith('exam-1');
+    });
+  });
+
+  test('surfaces an offline download error (Req 9.x)', () => {
+    const domain = { id: 'dom-1', examId: 'exam-1', name: 'Platform', weightPercent: 35 };
+    setupHook({
+      selectedExamId: 'exam-1',
+      detail: { examId: 'exam-1', domains: [domain], publishedQuestionCount: 2 },
+      detailLoading: false,
+      downloadStates: {
+        'exam-1': { status: 'error', message: 'Not enough free space to download this exam for offline use.' },
+      },
+    });
+    const { getByText } = render(<CatalogScreen />);
+    expect(getByText(/Not enough free space/)).toBeTruthy();
   });
 
   test('enroll button triggers enroll callback', async () => {

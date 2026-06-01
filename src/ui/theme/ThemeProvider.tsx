@@ -1,6 +1,16 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 
 import { highContrastTheme, standardTheme, type Theme } from './themes';
+import { loadHighContrastPreference, persistHighContrastPreference } from './highContrastStorage';
 
 export interface ThemeContextValue {
   theme: Theme;
@@ -33,11 +43,35 @@ export interface ThemeProviderProps {
  * Provides the active theme. Activation is a synchronous React state update, so
  * the new theme is applied on the next render — well within the 500 ms budget
  * (Requirement 10.5).
+ *
+ * The preference is persisted to device storage and rehydrated on launch
+ * (Requirement 10.6): on mount we load any saved value, and every subsequent
+ * change is written back. Writes are suppressed until hydration completes so the
+ * default value never clobbers a stored preference.
  */
 export function ThemeProvider({ children, initialHighContrast = false }: ThemeProviderProps) {
-  const [highContrast, setHighContrast] = useState(initialHighContrast);
+  const [highContrast, setHighContrastState] = useState(initialHighContrast);
+  const hydrated = useRef(false);
 
-  const toggleHighContrast = useCallback(() => setHighContrast((v) => !v), []);
+  useEffect(() => {
+    let cancelled = false;
+    void loadHighContrastPreference().then((stored) => {
+      if (cancelled) return;
+      if (stored !== null) setHighContrastState(stored);
+      hydrated.current = true;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated.current) return;
+    void persistHighContrastPreference(highContrast);
+  }, [highContrast]);
+
+  const setHighContrast = useCallback((enabled: boolean) => setHighContrastState(enabled), []);
+  const toggleHighContrast = useCallback(() => setHighContrastState((v) => !v), []);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -46,7 +80,7 @@ export function ThemeProvider({ children, initialHighContrast = false }: ThemePr
       setHighContrast,
       toggleHighContrast,
     }),
-    [highContrast, toggleHighContrast],
+    [highContrast, setHighContrast, toggleHighContrast],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
