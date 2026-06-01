@@ -28,8 +28,12 @@ export default function CatalogScreen() {
     enrollmentLimitVisible,
     dismissEnrollmentLimit,
     enroll,
+    contentUpdates,
+    dismissContentUpdate,
     refresh,
   } = useCatalog();
+
+  const examNameById = (id: string) => exams.find((e) => e.id === id)?.name ?? 'this exam';
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -79,6 +83,32 @@ export default function CatalogScreen() {
           </Pressable>
         </View>
       ) : null}
+
+      {contentUpdates.map((update) => {
+        const name = examNameById(update.examId);
+        return (
+          <View
+            key={update.notificationId}
+            style={styles.updateBanner}
+            accessibilityLiveRegion="polite"
+            accessibilityRole="alert"
+          >
+            <Text
+              style={styles.updateText}
+              accessibilityLabel={`Updated content for ${name} has been downloaded for offline use.`}
+            >
+              {name} content was updated and refreshed for offline use.
+            </Text>
+            <Pressable
+              onPress={() => dismissContentUpdate(update.notificationId)}
+              accessibilityRole="button"
+              accessibilityLabel={`Dismiss content update notice for ${name}`}
+            >
+              <Text style={styles.updateDismissLink}>Dismiss</Text>
+            </Pressable>
+          </View>
+        );
+      })}
 
       <FlatList
         data={exams}
@@ -241,6 +271,20 @@ const styles = StyleSheet.create({
   },
   dismissLink: {
     color: '#FCA5A5',
+    fontWeight: '600',
+  },
+  updateBanner: {
+    backgroundColor: '#0C4A6E',
+    borderRadius: 8,
+    marginBottom: 12,
+    padding: 12,
+  },
+  updateText: {
+    color: '#E0F2FE',
+    marginBottom: 8,
+  },
+  updateDismissLink: {
+    color: '#7DD3FC',
     fontWeight: '600',
   },
   empty: {

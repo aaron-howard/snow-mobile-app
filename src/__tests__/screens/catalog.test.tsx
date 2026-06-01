@@ -53,6 +53,13 @@ function mockDefault() {
     enrollmentLimitVisible: false,
     dismissEnrollmentLimit: jest.fn(),
     enroll: jest.fn().mockResolvedValue(undefined),
+    contentUpdates: [] as {
+      notificationId: string;
+      examId: string;
+      contentVersion: string;
+      refreshDeadline: number;
+    }[],
+    dismissContentUpdate: jest.fn(),
     refresh: jest.fn().mockResolvedValue(undefined),
   };
 }
@@ -132,6 +139,22 @@ describe('CatalogScreen', () => {
     await waitFor(() => {
       expect(setDomainForExam).toHaveBeenCalledWith('exam-1', 'dom-1');
     });
+  });
+
+  test('shows content-update banner and dismiss control (Req 2.7)', () => {
+    const dismissContentUpdate = jest.fn();
+    setupHook({
+      contentUpdates: [
+        { notificationId: 'cun-1', examId: 'exam-1', contentVersion: '2', refreshDeadline: 1 },
+      ],
+      dismissContentUpdate,
+    });
+    const { getByText, getByLabelText } = render(<CatalogScreen />);
+    expect(getByText(/content was updated and refreshed/)).toBeTruthy();
+    fireEvent.press(
+      getByLabelText('Dismiss content update notice for Certified System Administrator (CSA)'),
+    );
+    expect(dismissContentUpdate).toHaveBeenCalledWith('cun-1');
   });
 
   test('enroll button triggers enroll callback', async () => {

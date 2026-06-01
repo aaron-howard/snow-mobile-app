@@ -74,7 +74,7 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 1.1–1.14_
 
 
-- [~] 4. Exam catalog, enrollment, and topic selection
+- [x] 4. Exam catalog, enrollment, and topic selection
   - [x] 4.1 Implement `EnrollmentGuard.canEnroll(activeExamIds: string[]): boolean` pure function — [src/domain/enrollment/EnrollmentGuard.ts](src/domain/enrollment/EnrollmentGuard.ts)
     - Return true iff active count < 5
     - _Requirements: 2.6_
@@ -97,8 +97,13 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - Implement enroll action with `EnrollmentGuard`; show `EnrollmentLimitWarning` dialog when limit reached; handle enrollment system errors (Requirements 2.3, 2.4, 2.6)
     - Allow domain selection to filter subsequent sessions (Requirement 2.5) — persisted via AsyncStorage through [src/domain/catalog/domainSelectionStorage.ts](src/domain/catalog/domainSelectionStorage.ts)
     - _Requirements: 2.1–2.6_
-  - [~] 4.6 Implement content update notification delivery for enrolled users
+  - [x] 4.6 Implement content update notification delivery for enrolled users
     - Detect new `content_update_notifications` records; notify enrolled users who have downloaded that exam's content; trigger content refresh within 24 hours (Requirement 2.7)
+    - **Pure decision** `planContentUpdateDeliveries(notifications, exams, now)` — [src/domain/catalog/contentUpdateDelivery.ts](src/domain/catalog/contentUpdateDelivery.ts) — returns a delivery only when the exam is enrolled, downloaded for offline use, and the published `contentVersion` differs from the device's; each delivery carries a `refreshDeadline = now + 24h` (`CONTENT_REFRESH_WINDOW_MS`).
+    - **Orchestrator** `processContentUpdates(deps)` in the same file lists unsent notifications + exams, plans deliveries, then per delivery: `refreshContent` → `exams.markContentDownloaded` → `markNotified` → `notify`. A notification is only marked sent **after** its refresh succeeds, so an offline/failed run is safely retried on the next pass (returns `{ delivered, failures }`).
+    - **Wired** into [src/domain/catalog/useCatalog.ts](src/domain/catalog/useCatalog.ts): `refresh()` runs the processor before reading the catalog and exposes `contentUpdates` + `dismissContentUpdate`. The catalog screen ([app/(tabs)/catalog.tsx](app/(tabs)/catalog.tsx)) renders an accessible, dismissible content-update banner per delivery.
+    - **Deferred to task 13.5:** the real offline binary download. `refreshContent` is an injected seam (defaults to a no-op that just bumps the locally-recorded content version); Expo FileSystem download lands with the offline-access work.
+    - Tests: [src/domain/catalog/__tests__/contentUpdateDelivery.test.ts](src/domain/catalog/__tests__/contentUpdateDelivery.test.ts) (10 cases: plan eligibility matrix + orchestrator happy path, safe-retry on refresh failure, no-op) and a catalog screen banner/dismiss test. Full suite: 82/82 passing; `tsc --noEmit` clean.
     - _Requirements: 2.7_
   - [x] 4.7 Write unit tests for enrollment guard, domain filter, and catalog screen
     - Property tests cover guard + filter; [src/__tests__/screens/catalog.test.tsx](src/__tests__/screens/catalog.test.tsx) covers enrollment limit dialog, enrollment error path, and domain filter control

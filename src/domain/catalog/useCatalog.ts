@@ -3,6 +3,7 @@ import { createRepositories } from '@db/repositories';
 import type { ExamDTO, TopicDomainDTO } from '@db/repositories/types';
 import { EnrollmentGuard } from '@domain/enrollment';
 import { loadDomainSelections, persistDomainSelections } from './domainSelectionStorage';
+import { processContentUpdates, type ContentUpdateDelivery } from './contentUpdateDelivery';
 
 export interface CatalogDetail {
   examId: string;
@@ -26,6 +27,9 @@ export interface UseCatalogResult {
   enrollmentLimitVisible: boolean;
   dismissEnrollmentLimit: () => void;
   enroll: (examId: string) => Promise<void>;
+  /** Pending content-update notices for enrolled, downloaded exams (Req 2.7). */
+  contentUpdates: ContentUpdateDelivery[];
+  dismissContentUpdate: (notificationId: string) => void;
   refresh: () => Promise<void>;
 }
 
@@ -41,11 +45,30 @@ export function useCatalog(): UseCatalogResult {
   const [detail, setDetail] = useState<CatalogDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [enrollmentLimitVisible, setEnrollmentLimitVisible] = useState(false);
+  const [contentUpdates, setContentUpdates] = useState<ContentUpdateDelivery[]>([]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
+      // Deliver any pending content updates before reading the catalog so the
+      // list reflects refreshed content versions (Req 2.7). The actual offline
+      // binary download is wired in task 13.5; failures retry on next refresh.
+      try {
+        const result = await processContentUpdates({
+          contentUpdateNotifications: repos.contentUpdateNotifications,
+          exams: repos.exams,
+        });
+        if (result.delivered.length > 0) {
+          setContentUpdates((prev) => {
+            const known = new Set(prev.map((d) => d.notificationId));
+            return [...prev, ...result.delivered.filter((d) => !known.has(d.notificationId))];
+          });
+        }
+      } catch {
+        // Non-fatal: content-update delivery is retried on the next refresh.
+      }
+
       const [list, selections] = await Promise.all([repos.exams.list(), loadDomainSelections()]);
       setExams(list);
       setDomainByExam(selections);
@@ -55,6 +78,10 @@ export function useCatalog(): UseCatalogResult {
       setLoading(false);
     }
   }, [repos]);
+
+  const dismissContentUpdate = useCallback((notificationId: string) => {
+    setContentUpdates((prev) => prev.filter((d) => d.notificationId !== notificationId));
+  }, []);
 
   useEffect(() => {
     void refresh();
@@ -147,6 +174,8 @@ export function useCatalog(): UseCatalogResult {
     enrollmentLimitVisible,
     dismissEnrollmentLimit,
     enroll,
+    contentUpdates,
+    dismissContentUpdate,
     refresh,
   };
 }
