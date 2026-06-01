@@ -110,52 +110,48 @@ This plan breaks the React Native + Expo (TypeScript) application into increment
     - _Requirements: 2.1–2.7_
 
 
-- [ ] 5. Practice questions domain logic and quiz screen
-  - [~] 5.1 Implement `validateQuestion(question: QuestionRecord): boolean` pure function
-    - Verify `imageAltText` is a non-empty string for every question
+- [x] 5. Practice questions domain logic and quiz screen
+  - **Domain layer lives in [src/domain/practice/](src/domain/practice/)** (barrel: [index.ts](src/domain/practice/index.ts), shared types: [types.ts](src/domain/practice/types.ts)). The barrel deliberately re-exports only pure functions, the manager, and types — never the `use*` hooks — so importing it (e.g. from `QuestionCard`) never pulls WatermelonDB into a render test. Full suite after this task: **121/121 passing**, `tsc --noEmit` clean.
+  - [x] 5.1 Implement `validateQuestion(question: QuestionRecord): boolean` pure function — [src/domain/practice/validateQuestion.ts](src/domain/practice/validateQuestion.ts)
+    - Returns true iff `imageAltText` has a non-whitespace character (whitespace-only treated as empty, consistent with `validateFlashcard`).
     - _Requirements: 3.11_
-  - [~] 5.2 Write property test for accessible description on every question
-    - **Property 8: Every question has a non-empty accessible text description**
-    - Use `fc.record` of question with optional image; verify `imageAltText` is non-empty string
+  - [x] 5.2 Write property test for accessible description on every question — [validateQuestion.property.test.ts](src/domain/practice/__tests__/validateQuestion.property.test.ts)
+    - **Property 8** — 200-iteration `fc.string()` test asserting validity equals `imageAltText.trim().length > 0`, plus empty/whitespace/image-less boundary cases.
     - Tag: `// Feature: servicenow-cert-study-app, Property 8`
     - **Validates: Requirements 3.11**
-  - [~] 5.3 Implement `buildReviewQueue(questions: QuestionRecord[]): QuestionRecord[]` pure function
-    - Include all incorrectly answered questions; exclude correctly-answered-only questions; sort descending by incorrect count
+  - [x] 5.3 Implement `buildReviewQueue` pure function — [src/domain/practice/buildReviewQueue.ts](src/domain/practice/buildReviewQueue.ts)
+    - Generic over `{ incorrectCount }`; filters `incorrectCount > 0`, sorts descending (non-mutating — operates on the filtered copy).
     - _Requirements: 3.5, 3.6_
-  - [~] 5.4 Write property test for review queue completeness and ordering
-    - **Property 5: Review queue contains all incorrect answers ordered by descending incorrect count**
-    - Use `fc.array` of questions with random incorrect counts; verify all incorrect questions present, no correct-only questions, sorted descending
+  - [x] 5.4 Write property test for review queue completeness and ordering — [buildReviewQueue.property.test.ts](src/domain/practice/__tests__/buildReviewQueue.property.test.ts)
+    - **Property 5** — 200-iteration test verifying no correct-only entries, all incorrect entries present, descending order, plus non-mutation + empty cases.
     - Tag: `// Feature: servicenow-cert-study-app, Property 5`
     - **Validates: Requirements 3.5, 3.6**
-  - [~] 5.5 Implement `recordAttempt(question: QuestionRecord, answer: AnswerChoiceRecord)` domain function
-    - Record attempt under every domain tag associated with the question
+  - [x] 5.5 Implement `recordAttempt(question, answer)` domain function — [src/domain/practice/recordAttempt.ts](src/domain/practice/recordAttempt.ts)
+    - Pure: returns one attribution per **distinct** `domainId` (de-duplicated, never a subset). The WatermelonDB schema stores one domain per question, so the live quiz passes `[question.domainId]`; the function is general for the Progress_Tracker (task 9).
     - _Requirements: 3.4_
-  - [~] 5.6 Write property test for domain attribution on answer
-    - **Property 6: Quiz answer is attributed to all of the question's domain tags**
-    - Use `fc.record` with `fc.array(fc.string())` domain arrays; verify all domains recorded
+  - [x] 5.6 Write property test for domain attribution on answer — [recordAttempt.property.test.ts](src/domain/practice/__tests__/recordAttempt.property.test.ts)
+    - **Property 6** — 200-iteration `fc.array(fc.string())` domain test verifying every distinct domain is covered with matching answer id/correctness; empty + duplicate cases.
     - Tag: `// Feature: servicenow-cert-study-app, Property 6`
     - **Validates: Requirements 3.4**
-  - [~] 5.7 Implement `QuizSessionManager`: `startSession`, `startBookmarkSession`, `submitAnswer` (with ≤500 ms feedback), `endSession`
-    - Add incorrectly answered questions to the Review queue (Requirement 3.5)
-    - Implement question pool reset when all questions answered at least once; notify user on reset (Requirements 3.8, 3.9)
+  - [x] 5.7 Implement `QuizSessionManager` — [src/domain/practice/QuizSessionManager.ts](src/domain/practice/QuizSessionManager.ts)
+    - `startSession` (domain-filtered), `startBookmarkSession`, `submitAnswer`, `endSession`. Repos injected via `QuizSessionManagerDeps` (testable with fakes); in-memory per-`sessionId` state, persistence through the study-session/attempt/question repos.
+    - Incorrect answers are recorded as attempts → that **is** Review-queue membership (Req 3.5), since the queue derives from incorrect attempts. Answer grading is local (no network) → well within the 500 ms budget (Req 3.2, asserted in tests).
+    - Pool reset (Req 3.8): when no eligible question remains (`timesAnswered === 0 || isPoolReset`), `resetPool` is called and `poolWasReset` is flagged for the UI notice (Req 3.9).
+    - **Known limitation:** `durationSeconds` is written as `0` at create and not updated (the `StudySessionRepository.complete` interface only takes score/correct/completedAt). Real duration recording is part of Progress_Tracker (task 9.5).
     - _Requirements: 3.1–3.9_
-  - [~] 5.8 Build `QuestionCard` shared component
-    - Render question text, minimum 4 answer choices, image at full card width (Requirement 3.10)
-    - Show correct/incorrect feedback within 500 ms with explanation (Requirement 3.2)
-    - Include `accessibilityLabel` on all interactive elements; use `accessibilityLiveRegion` for feedback announcements (Requirement 10.1)
-    - Include text label and icon alongside color-coded correct/incorrect indicators (Requirement 10.4)
+  - [x] 5.8 Build `QuestionCard` shared component — [src/ui/QuestionCard.tsx](src/ui/QuestionCard.tsx)
+    - Question text, full-width image when present (Req 3.10), all provided choices, ≤500 ms feedback + explanation announced via `accessibilityLiveRegion` (Req 3.2/10.1). Correct/incorrect conveyed by **text label + ✓/✗ icon**, not color alone (Req 10.4). Each choice carries a stateful `accessibilityLabel`.
     - _Requirements: 3.1, 3.2, 3.10, 3.11, 10.1, 10.4_
-  - [~] 5.9 Write property test for minimum 4 answer choices per question
-    - **Property 7: Every question rendered in a quiz has at least 4 answer choices**
-    - Use `fc.record` of question with `fc.array(fc.record(), {minLength: 4})` choices; verify rendered card displays ≥4 choices
+  - [x] 5.9 Write property test for minimum 4 answer choices per question — [QuestionCard.property.test.tsx](src/ui/__tests__/QuestionCard.property.test.tsx)
+    - **Property 7** — renders `QuestionCard` with `fc` choices (minLength 4) and asserts the rendered `answer-choice` count is ≥4 and equals input (50 runs; render is heavier than pure fns).
     - Tag: `// Feature: servicenow-cert-study-app, Property 7`
     - **Validates: Requirements 3.1**
-  - [~] 5.10 Build quiz screen (`app/exam/[examId]/quiz.tsx`) and review queue screen (`app/exam/[examId]/review.tsx`)
-    - Wire `QuizSessionManager`; display session summary on completion (Requirement 3.3)
-    - Display Review queue ordered by descending incorrect count (Requirement 3.6)
+  - [x] 5.10 Build quiz + review screens
+    - [app/exam/[examId]/quiz.tsx](app/exam/[examId]/quiz.tsx) via [useQuiz.ts](src/domain/practice/useQuiz.ts): one-at-a-time flow, pool-reset banner, end-of-session summary with score % / counts / per-domain breakdown (Req 3.3); supports `?mode=bookmark`.
+    - [app/exam/[examId]/review.tsx](app/exam/[examId]/review.tsx) via [useReviewQueue.ts](src/domain/practice/useReviewQueue.ts): lists missed questions in the repo's descending-incorrect order (Req 3.6) with empty/error/refresh states.
     - _Requirements: 3.1–3.9_
-  - [~] 5.11 Write unit tests for quiz session, review queue, and QuestionCard component
-    - Test answer feedback timing, pool reset notification, empty review queue, image rendering
+  - [x] 5.11 Write unit tests for quiz session, review queue, and QuestionCard
+    - [QuizSessionManager.test.ts](src/domain/practice/__tests__/QuizSessionManager.test.ts) (pool exclusion/reset, grading, ≤500 ms timing, summary/breakdown, bookmark session), [QuestionCard.test.tsx](src/ui/__tests__/QuestionCard.test.tsx) (feedback text+icon, image rendering, disabled-after-answer, a11y labels), and screen tests [quiz.test.tsx](src/__tests__/screens/quiz.test.tsx) / [review.test.tsx](src/__tests__/screens/review.test.tsx) (mocked hooks, summary, empty review queue).
     - _Requirements: 3.1–3.11_
 
 
