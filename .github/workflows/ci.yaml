@@ -11,21 +11,74 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  quality:
+  lint:
+    name: lint
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            workers/pnpm-lock.yaml
+
+      - name: Install dependencies (root)
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            workers/pnpm-lock.yaml
+
+      - name: Install dependencies (root)
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            workers/pnpm-lock.yaml
 
       - name: Install dependencies (root)
         run: pnpm install --frozen-lockfile
@@ -33,14 +86,8 @@ jobs:
       - name: Typecheck (app)
         run: pnpm run typecheck
 
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Test
-        run: pnpm test
-
       - name: Typecheck (workers)
         working-directory: workers
         run: |
-          npm ci
-          npm run typecheck
+          pnpm install --frozen-lockfile
+          pnpm run typecheck

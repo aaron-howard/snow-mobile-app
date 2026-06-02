@@ -19,6 +19,8 @@ module.exports = [
       'ios/**',
       'dist/**',
       'coverage/**',
+      // Cloudflare Workers package has its own eslint + deps (pnpm in workers/).
+      'workers/**',
       // Tooling/config files that are not part of the TS program.
       'babel.config.js',
       'jest.config.js',
