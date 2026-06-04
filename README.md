@@ -34,6 +34,8 @@ The authoritative specs live alongside the code:
 - [docs/local-dev-and-device-testing.md](docs/local-dev-and-device-testing.md) — run Metro + Worker locally and test on a **physical** iPhone or Android device (LAN IP, `adb reverse`, Clerk, troubleshooting).
 - [docs/dependabot-upgrade-backlog.md](docs/dependabot-upgrade-backlog.md) — deferred Expo SDK 56 bumps and major dependency upgrade spikes (Clerk, Neon, Zustand, etc.).
 
+First-time setup from a clean clone: install with **pnpm**, copy `.env`, then build the **dev client** (Expo Go is not supported—WatermelonDB uses native modules). For physical devices and the local Worker, use [docs/local-dev-and-device-testing.md](docs/local-dev-and-device-testing.md).
+
 ```bash
 # 1. Install dependencies (requires Node 20+ and pnpm 9+).
 #    Install pnpm globally if you don't have it: `npm install -g pnpm`.
