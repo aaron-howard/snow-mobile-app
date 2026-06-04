@@ -32,8 +32,7 @@ The authoritative specs live alongside the code:
 - [tasks.md](tasks.md) — implementation plan (17 checkpoints / task groups + dependency graph).
 - [content-authoring.md](content-authoring.md) — how exam content is created, reviewed, and published.
 - [docs/local-dev-and-device-testing.md](docs/local-dev-and-device-testing.md) — run Metro + Worker locally and test on a **physical** iPhone or Android device (LAN IP, `adb reverse`, Clerk, troubleshooting).
-
-## Getting started
+- [docs/dependabot-upgrade-backlog.md](docs/dependabot-upgrade-backlog.md) — deferred Expo SDK 56 bumps and major dependency upgrade spikes (Clerk, Neon, Zustand, etc.).
 
 ```bash
 # 1. Install dependencies (requires Node 20+ and pnpm 9+).
