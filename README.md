@@ -31,6 +31,7 @@ The authoritative specs live alongside the code:
 - [design.md](design.md) — how it works (architecture, data models, 27 correctness properties, testing strategy).
 - [tasks.md](tasks.md) — implementation plan (17 checkpoints / task groups + dependency graph).
 - [content-authoring.md](content-authoring.md) — how exam content is created, reviewed, and published.
+- [docs/local-dev-and-device-testing.md](docs/local-dev-and-device-testing.md) — run Metro + Worker locally and test on a **physical** iPhone or Android device (LAN IP, `adb reverse`, Clerk, troubleshooting).
 
 ## Getting started
 
@@ -49,10 +50,11 @@ cp .env.example .env
 # 3. Placeholder app icons live under assets/ so local `expo prebuild` / dev client builds succeed.
 #    Replace them with branded artwork before any store release.
 
-# 4. Run on a simulator/emulator (requires a dev build — Expo Go won't work
-#    because WatermelonDB has native modules).
-pnpm run ios       # iOS Simulator
-pnpm run android   # Android Emulator
+# 4. Run on a simulator/emulator or a physical device (requires a dev build — Expo Go won't work
+#    because WatermelonDB has native modules). For phones on Wi‑Fi, LAN IP, and Worker binding,
+#    see docs/local-dev-and-device-testing.md.
+pnpm run ios       # iOS Simulator or connected iPhone
+pnpm run android   # Android Emulator or connected device
 ```
 
 ## Useful scripts

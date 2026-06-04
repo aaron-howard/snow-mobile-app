@@ -17,11 +17,15 @@
       "supportsTablet": true,
       "bundleIdentifier": "app.sncertprep.unofficial",
       "infoPlist": {
-        "NSUserNotificationUsageDescription": "Send you study reminders and streak alerts."
+        "NSUserNotificationUsageDescription": "Send you study reminders and streak alerts.",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
       }
     },
     "android": {
       "package": "app.sncertprep.unofficial",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F172A"
