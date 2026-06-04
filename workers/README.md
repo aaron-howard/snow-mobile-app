@@ -19,7 +19,7 @@ Neon Postgres
 1. **Install** — from `workers/`:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Create accounts:**
@@ -42,9 +42,15 @@ Neon Postgres
 5. **Run locally:**
 
    ```bash
-   npm run dev
+   pnpm run dev
    # Worker exposes http://localhost:8787 — set this as
    # EXPO_PUBLIC_API_BASE_URL in the Expo app's .env to talk to it.
+   ```
+
+   For a **physical device on the same Wi‑Fi**, bind to all interfaces so the phone can reach your PC (see [docs/local-dev-and-device-testing.md](../docs/local-dev-and-device-testing.md)):
+
+   ```bash
+   pnpm run dev:lan
    ```
 
 6. **Deploy:**
@@ -54,7 +60,7 @@ Neon Postgres
    wrangler secret put CLERK_SECRET_KEY
    wrangler secret put DATABASE_URL
 
-   npm run deploy
+   pnpm run deploy
    ```
 
 ## Routes

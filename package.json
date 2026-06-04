@@ -65,7 +65,9 @@
   },
   "pnpm": {
     "overrides": {
-      "@xmldom/xmldom": ">=0.8.13"
+      "@xmldom/xmldom": ">=0.8.13",
+      "expo-dev-launcher>ajv": ">=8.18.0",
+      "uuid": ">=11.1.1"
     }
   }
 }
