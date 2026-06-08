@@ -24,7 +24,7 @@
     "expo": "~54.0.0",
     "expo-constants": "~17.0.0",
     "expo-dev-client": "~5.0.0",
-    "expo-file-system": "~18.0.0",
+    "expo-file-system": "~56.0.7",
     "expo-linking": "~7.0.0",
     "expo-notifications": "~0.29.0",
     "expo-router": "~4.0.0",
