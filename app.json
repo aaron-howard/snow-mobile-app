@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SN Cert Prep (Unofficial)",
-    "slug": "sn-cert-prep",
+    "slug": "sn-certification-simulator",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,8 @@
         "NSUserNotificationUsageDescription": "Send you study reminders and streak alerts.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -51,7 +52,14 @@
     "extra": {
       "DISCLAIMER": "Unofficial. Not affiliated with or endorsed by ServiceNow, Inc.",
       "CLERK_PUBLISHABLE_KEY": "",
-      "API_BASE_URL": ""
-    }
+      "API_BASE_URL": "",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0c7ffce9-179c-44b4-a25f-83af9dafd031"
+      }
+    },
+    "owner": "ajhmhs-organization"
   }
 }
