@@ -1,7 +1,13 @@
+packages:
+  - '.'
+  - 'workers'
+
 allowBuilds:
   '@clerk/shared': true
   browser-tabs-lock: true
   bufferutil: true
   core-js: true
+  esbuild: set this to true or false
   unrs-resolver: true
   utf-8-validate: true
+  workerd: set this to true or false
