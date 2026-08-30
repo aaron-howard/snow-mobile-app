@@ -38,7 +38,8 @@ First-time setup from a clean clone: install with **pnpm**, copy `.env`, then bu
 
 ```bash
 # 1. Install dependencies (requires Node 20+ and pnpm 9+).
-#    Install pnpm globally if you don't have it: `npm install -g pnpm`.
+#    If pnpm isn't available yet, enable it via Corepack (bundled with Node 20+):
+#    `corepack enable && corepack prepare pnpm@latest --activate`
 pnpm install
 
 # 2. Copy and fill in env values (Expo reads `EXPO_PUBLIC_*` at bundle time).
