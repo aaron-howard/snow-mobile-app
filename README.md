@@ -32,8 +32,9 @@ The authoritative specs live alongside the code:
 - [tasks.md](tasks.md) — implementation plan (17 checkpoints / task groups + dependency graph).
 - [content-authoring.md](content-authoring.md) — how exam content is created, reviewed, and published.
 - [docs/local-dev-and-device-testing.md](docs/local-dev-and-device-testing.md) — run Metro + Worker locally and test on a **physical** iPhone or Android device (LAN IP, `adb reverse`, Clerk, troubleshooting).
+- [docs/dependabot-upgrade-backlog.md](docs/dependabot-upgrade-backlog.md) — deferred Expo SDK 56 bumps and major dependency upgrade spikes (Clerk, Neon, Zustand, etc.).
 
-## Getting started
+First-time setup from a clean clone: install with **pnpm**, copy `.env`, then build the **dev client** (Expo Go is not supported—WatermelonDB uses native modules). For physical devices and the local Worker, use [docs/local-dev-and-device-testing.md](docs/local-dev-and-device-testing.md).
 
 ```bash
 # 1. Install dependencies (requires Node 20+ and pnpm 9+).
