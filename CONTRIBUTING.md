@@ -24,7 +24,7 @@ The Expo app targets a **dev client** build (WatermelonDB has native modules; Ex
 
 ### Worker (API) development
 
-The Cloudflare Worker lives under [`workers/`](workers/). Follow **[workers/README.md](workers/README.md)** for `npm install`, Neon schema, `.dev.vars`, and `npm run dev` / deploy.
+The Cloudflare Worker lives under [`workers/`](workers/). Follow **[workers/README.md](workers/README.md)** for `pnpm install`, Neon schema, `.dev.vars`, and `pnpm run dev` / deploy.
 
 ## Commands to run before opening a PR
 

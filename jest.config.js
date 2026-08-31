@@ -9,7 +9,7 @@ module.exports = {
   // Broader than jest-expo's default to cover packages like expo-modules-core that ship
   // untranspiled .ts in their entry paths.
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo[a-z-]*|@expo[a-z-]*(/.*)?|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@nozbe/watermelondb)/)',
+    'node_modules/(?!(?:.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|@react-native/js-polyfills|expo[a-z-]*|@expo[a-z-]*(/.*)?|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@nozbe/watermelondb|react-native-reanimated|react-native-screens|react-native-safe-area-context|react-native-gesture-handler))',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

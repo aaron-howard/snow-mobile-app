@@ -9,7 +9,7 @@ This guide walks through running the **Expo dev client**, **Metro**, and the **C
 | Requirement | Notes |
 |-------------|--------|
 | **Node.js** | v20 or newer ([package.json](../package.json) `engines`). |
-| **pnpm** | v9+ recommended; install with `npm install -g pnpm` if needed. |
+| **pnpm** | v9+ recommended; enable with `corepack enable && corepack prepare pnpm@latest --activate` if it is not already available. |
 | **Git + repo clone** | `pnpm install` at the repository root. |
 | **iOS (optional)** | macOS, Xcode, CocoaPods (Xcode usually installs the toolchain). Apple ID for device provisioning. |
 | **Android (optional)** | Android Studio, SDK, platform tools (`adb` on your `PATH`). USB debugging enabled on the phone if using USB. |
